@@ -43,7 +43,28 @@ tab_valid, tab_bench = st.tabs(["组件验证", "基准报告"])
 
 # ============== Benchmark 报告页签 ==============
 with tab_bench:
+    import subprocess
     BENCH_DIR = ROOT / "axiom_os" / "benchmarks" / "results"
+    if st.button("🚀 运行 Quick Benchmark", help="执行 quick 配置并生成报告，约 20 秒"):
+        with st.spinner("Benchmark 运行中..."):
+            try:
+                proc = subprocess.run(
+                    [sys.executable, "-m", "axiom_os.benchmarks.run_benchmarks",
+                     "--config", "quick", "--report", "--trend"],
+                    cwd=str(ROOT),
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                )
+                if proc.returncode == 0:
+                    st.success("Benchmark 完成！")
+                    st.rerun()
+                else:
+                    st.error(f"Benchmark 失败: {proc.stderr[:500] if proc.stderr else proc.stdout[-500:]}")
+            except subprocess.TimeoutExpired:
+                st.error("Benchmark 超时")
+            except Exception as e:
+                st.error(f"异常: {e}")
     if BENCH_DIR.exists():
         json_files = sorted(BENCH_DIR.glob("benchmark_*.json"), reverse=True)
         if json_files:

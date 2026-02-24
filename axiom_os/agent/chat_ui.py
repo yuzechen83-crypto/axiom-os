@@ -24,17 +24,46 @@ if __name__ == "__main__" and os.environ.get("AXIOM_STREAMLIT_RUN") != "1":
     )
     sys.exit(result.returncode)
 
+import json
 import streamlit as st
 
 st.set_page_config(page_title="Axiom-Agent Chat", page_icon="🔬", layout="centered")
 st.title("🔬 Axiom-Agent: Text-to-Physics")
 st.caption("输入物理问题，AI 生成代码并运行 Axiom 仿真 | 或选择多领域学习 (MLL)")
 
+# 对话持久化：JSON 文件
+CHAT_HISTORY_PATH = ROOT / "agent_output" / "chat_history.json"
+
+
+def load_chat_history():
+    """从文件加载对话历史"""
+    if CHAT_HISTORY_PATH.exists():
+        try:
+            with open(CHAT_HISTORY_PATH, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return []
+
+
+def save_chat_history(messages):
+    """保存对话历史到文件"""
+    CHAT_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CHAT_HISTORY_PATH, "w", encoding="utf-8") as f:
+        json.dump(messages, f, ensure_ascii=False, indent=2)
+
+
 # 模式选择：Chat 或 MLL
 mode = st.sidebar.radio("模式", ["Chat (Text-to-Physics)", "MLL (多领域学习)"], index=0)
 
 if "messages" not in st.session_state:
+    st.session_state.messages = load_chat_history()
+
+# 清空历史按钮
+if st.sidebar.button("清空对话历史"):
     st.session_state.messages = []
+    save_chat_history([])
+    st.rerun()
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
@@ -134,3 +163,4 @@ if prompt := st.chat_input("输入物理问题，如：双摆带摩擦平衡..."
         st.markdown(reply)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
+    save_chat_history(st.session_state.messages)
