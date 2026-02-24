@@ -482,6 +482,19 @@ def bench_turbulence(epochs: int = 200, batch_size: int = None) -> float:
     return elapsed
 
 
+def _run_rar_discovery_compat(n_galaxies: int, epochs: int, apply_mass_calibration: bool = True):
+    """Call run_rar_discovery; support both old (no apply_mass_calibration) and new signature."""
+    from axiom_os.experiments.discovery_rar import run_rar_discovery
+    try:
+        return run_rar_discovery(
+            n_galaxies=n_galaxies,
+            epochs=epochs,
+            apply_mass_calibration=apply_mass_calibration,
+        )
+    except TypeError:
+        return run_rar_discovery(n_galaxies=n_galaxies, epochs=epochs)
+
+
 def bench_rar(
     n_galaxies: int = 20,
     epochs: int = 100,
@@ -489,25 +502,15 @@ def bench_rar(
     apply_mass_calibration: bool = True,
 ) -> float:
     """RAR Discovery 耗时 (s)；可选报告校准前/后 R²。"""
-    from axiom_os.experiments.discovery_rar import run_rar_discovery
-
     r2_uncal = None
     if apply_mass_calibration:
-        res_uncal = run_rar_discovery(
-            n_galaxies=n_galaxies,
-            epochs=epochs,
-            apply_mass_calibration=False,
-        )
+        res_uncal = _run_rar_discovery_compat(n_galaxies, epochs, apply_mass_calibration=False)
         if "error" not in res_uncal and res_uncal.get("r2_log") is not None:
             r2_uncal = res_uncal["r2_log"]
             _record("rar_discovery", "r2_log_uncalibrated", r2_uncal, "", {})
 
     t0 = time.perf_counter()
-    res = run_rar_discovery(
-        n_galaxies=n_galaxies,
-        epochs=epochs,
-        apply_mass_calibration=apply_mass_calibration,
-    )
+    res = _run_rar_discovery_compat(n_galaxies, epochs, apply_mass_calibration)
     elapsed = time.perf_counter() - t0
     ok = "error" not in res
     _record("rar_discovery", "elapsed_s", elapsed, "s", {"n_galaxies": n_galaxies, "epochs": epochs, "ok": ok})
