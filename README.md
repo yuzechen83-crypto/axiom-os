@@ -33,24 +33,46 @@ SPNN = ⟨A, N, C, I, M, O, H, B⟩
 ## 快速开始
 
 ```bash
+git clone <your-repo-url>
+cd PythonProject1
 pip install -r requirements.txt
 python run_spnn_example.py
 ```
 
+**可运行性**：无 `axiom_core_proprietary` 时，基准与公式发现 Demo 使用内置多项式回退，仍可完整运行。
+
 ## 基准测试 (Benchmark)
 
 ```bash
-# 快速验证 (~20s)
+# 快速验证 (~30s)
 python -m axiom_os.benchmarks.run_benchmarks --config quick --report --trend
 
-# 标准配置 (~1min，含 E2E Quick + Memory)
+# 标准配置 (~1min，含 E2E Quick + Memory + Discovery 鲁棒性)
 python -m axiom_os.benchmarks.run_benchmarks --config standard --report
 
 # 完整配置 (含全 E2E)
 python -m axiom_os.benchmarks.run_benchmarks --config full --report --trend -o full_report.json
+
+# 可选：与 PySR/SINDy 对比（需 pip install pysr pysindy）
+python -m axiom_os.benchmarks.run_benchmarks --config quick --compare-pysr --report
+
+# 高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz 混沌）
+python -m axiom_os.benchmarks.run_benchmarks --hard --report
 ```
 
-报告输出：`axiom_os/benchmarks/results/`（JSON、趋势图、Markdown、HTML）
+报告输出：`axiom_os/benchmarks/results/`（JSON、趋势图、Markdown、HTML、**Discovery vs Baseline 对比图**）
+
+报告含**亮点摘要**：RCLN 吞吐、Discovery R² 提升 vs 线性回归、RAR 符号发现 R²。
+
+**发布到 GitHub**：push 到 `main` 时 CI 会自动跑基准并发布到 GitHub Pages。在仓库 **Settings → Pages** 中来源选 **GitHub Actions**，即可在 `https://<org>.github.io/<repo>/` 查看最新报告（`report.html`、`latest.json`）。
+
+## 公式发现 Demo
+
+```bash
+python -m axiom_os.demos.discovery_demo
+```
+
+从带噪数据 `y = x0² + 0.5*x1` 恢复符号公式，对比 Axiom Discovery 与线性回归的 R²。
 
 ## Agent 与 MLL
 

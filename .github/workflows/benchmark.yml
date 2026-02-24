@@ -1,5 +1,5 @@
-# Axiom-OS CI: 单元测试 + 基准测试
-# 每次 push/PR 运行 pytest 与 quick benchmark，防止回归
+# Axiom-OS CI: 单元测试 + 基准测试 + 结果发布到 GitHub Pages
+# 每次 push/PR 运行 pytest 与 quick benchmark；push 到 main 时发布结果
 name: CI
 
 on:
@@ -7,6 +7,11 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test-and-benchmark:
@@ -43,3 +48,61 @@ jobs:
             axiom_os/benchmarks/results/*.md
             axiom_os/benchmarks/results/*.html
             benchmark_ci.json
+
+  deploy-benchmark-pages:
+    needs: test-and-benchmark
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+
+      - name: Prepare site for GitHub Pages
+        run: |
+          SITE=benchmark-site
+          mkdir -p "$SITE"
+          # 最新报告与图表
+          if [ -f axiom_os/benchmarks/results/benchmark_report.html ]; then
+            cp axiom_os/benchmarks/results/benchmark_report.html "$SITE/report.html"
+          fi
+          if [ -f axiom_os/benchmarks/results/benchmark_comparison.png ]; then
+            cp axiom_os/benchmarks/results/benchmark_comparison.png "$SITE/"
+          fi
+          # 最新 JSON（优先 dated，否则 ci）
+          LATEST_JSON=$(ls -t axiom_os/benchmarks/results/benchmark_*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST_JSON" ]; then
+            cp "$LATEST_JSON" "$SITE/latest.json"
+          elif [ -f benchmark_ci.json ]; then
+            cp benchmark_ci.json "$SITE/latest.json"
+          fi
+          # 首页
+          cat > "$SITE/index.html" << 'EOF'
+          <!DOCTYPE html>
+          <html lang="zh">
+          <head><meta charset="utf-8"><title>Axiom-OS Benchmark</title>
+          <style>body{font-family:system-ui,sans-serif;margin:2em;max-width:720px}
+          a{color:#1565c0}h1{color:#1a237e}</style></head>
+          <body>
+          <h1>Axiom-OS 性能基准</h1>
+          <p><a href="report.html">最新报告 (HTML)</a></p>
+          <p><a href="latest.json">最新结果 (JSON)</a></p>
+          <p><small>由 CI 在 push 到 main 时自动生成</small></p>
+          </body></html>
+          EOF
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: benchmark-site
+
+  deploy-pages:
+    needs: deploy-benchmark-pages
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

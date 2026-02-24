@@ -125,6 +125,82 @@ def generate_trend_chart(results: List[Dict], historical: List[Dict], out_path: 
     plt.close()
 
 
+def _extract_highlights(results: List[Dict[str, Any]]) -> List[tuple]:
+    """提取亮点指标用于报告摘要"""
+    highlights = []
+    by_key = {(r.get("name"), r.get("metric")): r for r in results}
+    # RCLN 吞吐
+    r = by_key.get(("rcln_forward", "throughput"))
+    if r and r.get("value", 0) > 0:
+        highlights.append(("RCLN 吞吐", f"{r['value']/1e6:.2f}M samples/s", "物理+神经混合推理"))
+    # Discovery vs Baseline
+    r2_a = _get_value(results, "discovery_vs_baseline", "r2_axiom")
+    r2_l = _get_value(results, "discovery_vs_baseline", "r2_linear")
+    if r2_a is not None and r2_l is not None:
+        gain = (r2_a - r2_l) * 100
+        highlights.append(("Discovery R² 提升", f"{gain:+.1f}% vs 线性回归", "公式恢复任务"))
+    # RAR R²
+    r = by_key.get(("rar_discovery", "r2"))
+    if r and r.get("value", 0) > 0:
+        highlights.append(("RAR 符号发现 R²", f"{r['value']:.3f}", "星系旋转曲线"))
+    # E2E 总耗时
+    r = by_key.get(("e2e_quick_total", "elapsed_s"))
+    if r and r.get("value", 0) > 0:
+        highlights.append(("E2E 快速验证", f"{r['value']:.1f}s", "main+rar+battery"))
+    # 峰值内存
+    r = by_key.get(("memory_peak", "mb"))
+    if r and r.get("value", 0) >= 0:
+        highlights.append(("峰值内存", f"{r['value']:.2f} MB", "湍流训练期间"))
+    # Discovery 鲁棒性
+    r = by_key.get(("discovery_robustness", "r2_min"))
+    if r and r.get("value", 0) >= 0:
+        highlights.append(("Discovery 鲁棒性 R²_min", f"{r['value']:.3f}", "噪声 2%/8%/15%"))
+    # sklearn 多项式 vs Axiom（始终可用）
+    r_poly = by_key.get(("discovery_vs_sklearn_poly", "r2_poly"))
+    r_axiom_poly = by_key.get(("discovery_vs_sklearn_poly", "r2_axiom"))
+    if r_poly and r_axiom_poly:
+        highlights.append(("Discovery vs sklearn 多项式", f"Axiom {r_axiom_poly['value']:.3f} vs Poly {r_poly['value']:.3f}", "公式恢复对比"))
+    # PySR/SINDy 对比
+    r_pysr = by_key.get(("discovery_vs_pysr", "r2_axiom"))
+    r_sindy = by_key.get(("discovery_vs_sindy", "r2_axiom"))
+    if r_pysr or r_sindy:
+        parts = []
+        if r_pysr:
+            r2_p = by_key.get(("discovery_vs_pysr", "r2_pysr"))
+            if r2_p:
+                parts.append(f"PySR {r2_p['value']:.2f}")
+        if r_sindy:
+            r2_s = by_key.get(("discovery_vs_sindy", "r2_sindy"))
+            if r2_s:
+                parts.append(f"SINDy {r2_s['value']:.2f}")
+        if parts:
+            highlights.append(("Discovery vs 其他", ", ".join(parts), "符号回归对比"))
+    # 高难度 Discovery 套件
+    r_sparse = _get_value(results, "hard_sparse", "r2")
+    r_small = _get_value(results, "hard_small_n", "r2")
+    r_feynman = _get_value(results, "hard_feynman", "r2")
+    r_lorenz = _get_value(results, "hard_lorenz", "r2_dx_dt")
+    r_extrap_train = _get_value(results, "hard_extrapolation", "r2_train")
+    r_extrap_linear = _get_value(results, "hard_extrapolation", "r2_extrap_linear")
+    if any(v is not None for v in [r_sparse, r_small, r_feynman, r_lorenz, r_extrap_train]):
+        parts = []
+        if r_sparse is not None:
+            parts.append(f"稀疏R²={r_sparse:.2f}")
+        if r_small is not None:
+            parts.append(f"小n R²={r_small:.2f}")
+        if r_feynman is not None:
+            parts.append(f"Feynman R²={r_feynman:.2f}")
+        if r_lorenz is not None:
+            parts.append(f"Lorenz R²={r_lorenz:.2f}")
+        if r_extrap_train is not None:
+            parts.append(f"外推(train)={r_extrap_train:.2f}")
+        if parts:
+            highlights.append(("高难度 Discovery", ", ".join(parts), "稀疏/外推/小样本/Feynman/混沌"))
+        if r_extrap_linear is not None:
+            highlights.append(("外推线性基线", f"R²={r_extrap_linear:.2f}", "线性在 [1,2] 外推通常崩"))
+    return highlights
+
+
 def generate_markdown_report(
     results: List[Dict[str, Any]],
     alerts: List[Dict[str, Any]],
@@ -137,11 +213,26 @@ def generate_markdown_report(
         f"**配置**: {config_name}",
         f"**时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
+    ]
+    # 亮点摘要
+    highlights = _extract_highlights(results)
+    if highlights:
+        lines.extend([
+            "## 📊 亮点摘要",
+            "",
+            "| 指标 | 值 | 说明 |",
+            "|------|-----|------|",
+        ])
+        for name, val, desc in highlights:
+            lines.append(f"| {name} | **{val}** | {desc} |")
+        lines.extend(["", "---", ""])
+
+    lines.extend([
         "## 结果汇总",
         "",
         "| 指标 | 值 | 单位 | 备注 |",
         "|------|-----|------|------|",
-    ]
+    ])
     for r in results:
         v = r.get("value", 0)
         u = r.get("unit", "")
@@ -163,18 +254,81 @@ def generate_markdown_report(
     return "\n".join(lines)
 
 
+def generate_comparison_chart(results: List[Dict], out_path: Path) -> bool:
+    """生成 Discovery vs Baseline/多项式 对比柱状图，成功返回 True"""
+    r2_axiom = _get_value(results, "discovery_vs_baseline", "r2_axiom")
+    r2_linear = _get_value(results, "discovery_vs_baseline", "r2_linear")
+    r2_poly = _get_value(results, "discovery_vs_sklearn_poly", "r2_poly")
+    r2_axiom_poly = _get_value(results, "discovery_vs_sklearn_poly", "r2_axiom")
+    if r2_axiom is None and r2_axiom_poly is None:
+        return False
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        methods, vals, colors = [], [], []
+        if r2_linear is not None:
+            methods.append("线性回归\n(baseline)")
+            vals.append(r2_linear)
+            colors.append("#888")
+        if r2_poly is not None:
+            methods.append("sklearn\n多项式(deg=2)")
+            vals.append(r2_poly)
+            colors.append("#1976d2")
+        ax_val = r2_axiom if r2_axiom is not None else r2_axiom_poly
+        methods.append("Axiom Discovery")
+        vals.append(ax_val)
+        colors.append("#2e7d32")
+        fig, ax = plt.subplots(figsize=(6, 4))
+        bars = ax.bar(methods, vals, color=colors, edgecolor="black", linewidth=0.5)
+        ax.set_ylabel("R2 (formula recovery)")
+        ax.set_title("Discovery vs Baseline: y = x0² + 0.5*x1")
+        ax.set_ylim(0, 1.05)
+        for b, v in zip(bars, vals):
+            ax.text(b.get_x() + b.get_width() / 2, v + 0.02, f"{v:.3f}", ha="center", fontsize=11)
+        ref = r2_linear if r2_linear is not None else (r2_poly if r2_poly is not None else 0)
+        gain = (ax_val - ref) * 100
+        ax.text(0.5, 0.95, f"R2 gain vs baseline: {gain:+.1f}%", transform=ax.transAxes, ha="center",
+                fontsize=12, bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.8))
+        plt.tight_layout()
+        plt.savefig(out_path, dpi=120)
+        plt.close()
+        return True
+    except ImportError:
+        return False
+
+
 def generate_html_report(
     results: List[Dict[str, Any]],
     alerts: List[Dict[str, Any]],
     config_name: str = "standard",
+    comparison_chart_path: Optional[Path] = None,
 ) -> str:
     """Phase 4.4: 生成 HTML 报告"""
     html = """<!DOCTYPE html><html><head><meta charset='utf-8'><title>Axiom Benchmark</title>
-<style>body{font-family:sans-serif;margin:2em;max-width:900px}
-table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px 12px}
-th{background:#f0f0f0}.alert{color:#c00}.ok{color:#080}</style></head><body>"""
+<style>body{font-family:system-ui,sans-serif;margin:2em;max-width:960px;background:#fafafa}
+h1{color:#1a237e}h2{margin-top:1.5em;color:#283593}
+.highlights{background:linear-gradient(135deg,#e8eaf6,#e3f2fd);padding:1em 1.5em;border-radius:8px;margin:1em 0}
+.highlights table{width:100%}
+table{border-collapse:collapse;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+th,td{border:1px solid #e0e0e0;padding:10px 14px}
+th{background:#3f51b5;color:#fff;font-weight:600}
+tr:nth-child(even){background:#f5f5f5}
+.alert{color:#c62828;font-weight:600}.ok{color:#2e7d32}
+.chart{margin:1em 0;max-width:500px}</style></head><body>"""
     html += f"<h1>Axiom-OS 性能基准测试报告</h1>"
     html += f"<p><b>配置</b>: {config_name} | <b>时间</b>: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>"
+
+    highlights = _extract_highlights(results)
+    if highlights:
+        html += "<div class='highlights'><h2>📊 亮点摘要</h2><table><tr><th>指标</th><th>值</th><th>说明</th></tr>"
+        for name, val, desc in highlights:
+            html += f"<tr><td>{name}</td><td><strong>{val}</strong></td><td>{desc}</td></tr>"
+        html += "</table></div>"
+
+    if comparison_chart_path and comparison_chart_path.exists():
+        html += f"<h2>Discovery vs Baseline</h2><img src='{comparison_chart_path.name}' alt='对比图' class='chart' />"
+
     html += "<h2>结果汇总</h2><table><tr><th>指标</th><th>值</th><th>单位</th><th>备注</th></tr>"
     for r in results:
         v = r.get("value", 0)

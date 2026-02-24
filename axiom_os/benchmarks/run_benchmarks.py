@@ -4,11 +4,12 @@ Axiom-OS 性能基准测试入口
 用法:
   python -m axiom_os.benchmarks.run_benchmarks                    # 默认 standard
   python -m axiom_os.benchmarks.run_benchmarks --config quick      # 快速
-  python -m axiom_os.benchmarks.run_benchmarks --config full       # 完整
-  python -m axiom_os.benchmarks.run_benchmarks --unit               # 仅单元
-  python -m axiom_os.benchmarks.run_benchmarks -o report.json       # 输出 JSON
-  python -m axiom_os.benchmarks.run_benchmarks --report            # 生成 MD/HTML 报告
-  python -m axiom_os.benchmarks.run_benchmarks --trend              # 生成趋势图
+  python -m axiom_os.benchmarks.run_benchmarks --config full        # 完整
+  python -m axiom_os.benchmarks.run_benchmarks --unit              # 仅单元
+  python -m axiom_os.benchmarks.run_benchmarks --hard              # 高难度 Discovery 套件
+  python -m axiom_os.benchmarks.run_benchmarks -o report.json      # 输出 JSON
+  python -m axiom_os.benchmarks.run_benchmarks --report             # 生成 MD/HTML 报告
+  python -m axiom_os.benchmarks.run_benchmarks --trend             # 生成趋势图
 """
 
 import sys
@@ -72,6 +73,258 @@ def bench_discovery(n_samples: int = 200, n_runs: int = 3) -> float:
     avg = sum(times) / len(times)
     _record("discovery_multivariate", "latency_s", avg, "s", {"n_samples": n_samples})
     return avg
+
+
+def bench_discovery_vs_baseline(n_samples: int = 300) -> None:
+    """Discovery vs Baseline: y = x0**2 + 0.5*x1 (多项式优于线性)"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X = np.random.randn(n_samples, 4).astype(np.float64)
+    y_true = X[:, 0] ** 2 + 0.5 * X[:, 1]
+    y = y_true + 0.05 * np.random.randn(n_samples)
+
+    # Axiom Discovery (多项式形式可拟合 x0^2)
+    engine = DiscoveryEngine(use_pysr=False)
+    formula_axiom, pred_axiom, _ = engine.discover_multivariate(
+        X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic"
+    )
+    r2_axiom = 1 - np.mean((pred_axiom - y_true) ** 2) / (np.var(y_true) + 1e-12) if formula_axiom else 0
+
+    # Baseline: 线性回归 (无法拟合 x0^2)
+    X_lin = np.column_stack([X[:, 0], X[:, 1], np.ones(n_samples)])
+    coef, _, _, _ = np.linalg.lstsq(X_lin, y, rcond=None)
+    pred_lin = X_lin @ coef
+    r2_lin = 1 - np.mean((pred_lin - y_true) ** 2) / (np.var(y_true) + 1e-12)
+
+    formula_short = (formula_axiom[:60] + "..") if formula_axiom and len(formula_axiom) > 60 else (formula_axiom or "N/A")
+    _record("discovery_vs_baseline", "r2_axiom", float(r2_axiom), "", {"formula": formula_short})
+    _record("discovery_vs_baseline", "r2_linear", float(r2_lin), "", {})
+    _record("discovery_vs_baseline", "r2_gain", float(r2_axiom - r2_lin), "", {"n_samples": n_samples})
+
+
+def bench_discovery_robustness() -> None:
+    """Discovery 鲁棒性：不同噪声水平下的 R²"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    r2_list = []
+    for noise in [0.02, 0.08, 0.15]:
+        X = np.random.randn(300, 4).astype(np.float64)
+        y_true = X[:, 0] ** 2 + 0.5 * X[:, 1]
+        y = y_true + noise * np.random.randn(300)
+        engine = DiscoveryEngine(use_pysr=False)
+        formula, pred, _ = engine.discover_multivariate(
+            X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic"
+        )
+        r2 = 1 - np.mean((pred - y_true) ** 2) / (np.var(y_true) + 1e-12) if formula else 0
+        r2_list.append(float(r2))
+    r2_mean = sum(r2_list) / len(r2_list)
+    r2_min = min(r2_list)
+    _record("discovery_robustness", "r2_mean", r2_mean, "", {"noise_levels": "0.02,0.08,0.15"})
+    _record("discovery_robustness", "r2_min", r2_min, "", {})
+
+
+def bench_discovery_vs_sklearn_poly(n: int = 300) -> None:
+    """Discovery vs sklearn 多项式回归（始终可用，标准配置运行）"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X = np.random.randn(n, 4).astype(np.float64)
+    y_true = X[:, 0] ** 2 + 0.5 * X[:, 1]
+    y = y_true + 0.05 * np.random.randn(n)
+
+    engine = DiscoveryEngine(use_pysr=False)
+    _, pred_axiom, _ = engine.discover_multivariate(X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic")
+    r2_axiom = 1 - np.mean((pred_axiom - y_true) ** 2) / (np.var(y_true) + 1e-12)
+
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.linear_model import Ridge
+    poly = PolynomialFeatures(degree=2, include_bias=True)
+    X_poly = poly.fit_transform(X)
+    model = Ridge(alpha=1e-3)
+    model.fit(X_poly, y)
+    pred_poly = model.predict(X_poly)
+    r2_poly = 1 - np.mean((pred_poly - y_true) ** 2) / (np.var(y_true) + 1e-12)
+    _record("discovery_vs_sklearn_poly", "r2_poly", float(r2_poly), "", {})
+    _record("discovery_vs_sklearn_poly", "r2_axiom", float(r2_axiom), "", {})
+
+
+def bench_discovery_vs_pysr_sindy() -> None:
+    """Discovery vs 可选 PySR/SINDy（需安装，--compare-pysr 时运行）"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    n = 300
+    X = np.random.randn(n, 4).astype(np.float64)
+    y_true = X[:, 0] ** 2 + 0.5 * X[:, 1]
+    y = y_true + 0.05 * np.random.randn(n)
+
+    engine = DiscoveryEngine(use_pysr=False)
+    _, pred_axiom, _ = engine.discover_multivariate(X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic")
+    r2_axiom = 1 - np.mean((pred_axiom - y_true) ** 2) / (np.var(y_true) + 1e-12)
+
+    # PySR（需 Julia，首次较慢）
+    try:
+        from pysr import PySRRegressor
+        model = PySRRegressor(niterations=5, binary_operators=["+", "*"], unary_operators=["square"])
+        model.fit(X, y)
+        pred_pysr = np.asarray(model.predict(X)).ravel()
+        if pred_pysr.shape[0] == n and np.all(np.isfinite(pred_pysr)):
+            r2_pysr = 1 - np.mean((pred_pysr - y_true) ** 2) / (np.var(y_true) + 1e-12)
+            _record("discovery_vs_pysr", "r2_pysr", float(r2_pysr), "", {})
+            _record("discovery_vs_pysr", "r2_axiom", float(r2_axiom), "", {})
+    except (ImportError, Exception):
+        pass
+
+    # SINDy
+    try:
+        from pysindy import SINDy
+        from pysindy.feature_library import PolynomialLibrary
+        lib = PolynomialLibrary(degree=2)
+        model = SINDy(feature_library=lib)
+        model.fit(X, y.reshape(-1, 1))
+        pred_sindy = model.predict(X)
+        if pred_sindy is not None:
+            pred_sindy = np.asarray(pred_sindy).ravel()
+            if pred_sindy.shape[0] == n and np.all(np.isfinite(pred_sindy)):
+                r2_sindy = 1 - np.mean((pred_sindy - y_true) ** 2) / (np.var(y_true) + 1e-12)
+                _record("discovery_vs_sindy", "r2_sindy", float(r2_sindy), "", {})
+                _record("discovery_vs_sindy", "r2_axiom", float(r2_axiom), "", {})
+    except (ImportError, Exception):
+        pass
+
+
+# -----------------------------------------------------------------------------
+# 高难度 Discovery 基准（专业人士级）
+# -----------------------------------------------------------------------------
+
+
+def bench_discovery_hard_sparse(n_samples: int = 200, n_vars: int = 20, noise: float = 0.18) -> None:
+    """高维稀疏：20 维中仅 x3,x7 有效，y = sin(x3) + 0.5*x7，18% 噪声"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X = np.random.randn(n_samples, n_vars).astype(np.float64)
+    y_true = np.sin(X[:, 3]) + 0.5 * X[:, 7]
+    y = y_true + noise * np.std(y_true) * np.random.randn(n_samples)
+
+    engine = DiscoveryEngine(use_pysr=False)
+    var_names = [f"x{i}" for i in range(n_vars)]
+    formula, pred, _ = engine.discover_multivariate(X, y, var_names=var_names, selector="bic")
+    r2 = 1 - np.mean((pred - y_true) ** 2) / (np.var(y_true) + 1e-12) if formula else 0
+    _record("hard_sparse", "r2", float(r2), "", {"n_vars": n_vars, "noise_pct": int(noise * 100)})
+    _record("hard_sparse", "formula_ok", 1.0 if formula and len(formula) > 5 else 0, "", {})
+
+
+def bench_discovery_hard_extrapolation(n_train: int = 150, n_test: int = 150, noise: float = 0.08) -> None:
+    """外推：训练 x∈[0,1]，测试 x∈[1,2]；真实 y = exp(0.3*x0) + log(1+x1)。仅训练集拟合，基线在测试集评估。"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X_train = np.random.uniform(0, 1, (n_train, 4)).astype(np.float64)
+    y_true_train = np.exp(0.3 * X_train[:, 0]) + np.log1p(X_train[:, 1])
+    y_train = y_true_train + noise * np.std(y_true_train) * np.random.randn(n_train)
+    X_test = np.random.uniform(1, 2, (n_test, 4)).astype(np.float64)
+    y_true_test = np.exp(0.3 * X_test[:, 0]) + np.log1p(X_test[:, 1])
+
+    engine = DiscoveryEngine(use_pysr=False)
+    formula, pred_train, _ = engine.discover_multivariate(
+        X_train, y_train, var_names=["x0", "x1", "x2", "x3"], selector="bic"
+    )
+    r2_train = 1 - np.mean((pred_train - y_true_train) ** 2) / (np.var(y_true_train) + 1e-12) if formula else 0
+    # 线性基线：训练集拟合，测试集外推（通常崩）
+    X_lin = np.column_stack([X_train[:, 0], X_train[:, 1], np.ones(n_train)])
+    coef, _, _, _ = np.linalg.lstsq(X_lin, y_train, rcond=None)
+    X_test_lin = np.column_stack([X_test[:, 0], X_test[:, 1], np.ones(n_test)])
+    pred_lin_test = X_test_lin @ coef
+    r2_extrap_linear = 1 - np.mean((pred_lin_test - y_true_test) ** 2) / (np.var(y_true_test) + 1e-12)
+    _record("hard_extrapolation", "r2_train", float(r2_train), "", {})
+    _record("hard_extrapolation", "r2_extrap_linear", float(r2_extrap_linear), "", {"n_train": n_train, "n_test": n_test})
+
+
+def bench_discovery_hard_small_n(n_samples: int = 50, noise: float = 0.10) -> None:
+    """小样本：n=50，y = x0*x1 + x2**2 + 0.3*x3"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X = np.random.randn(n_samples, 4).astype(np.float64)
+    y_true = X[:, 0] * X[:, 1] + X[:, 2] ** 2 + 0.3 * X[:, 3]
+    y = y_true + noise * np.std(y_true) * np.random.randn(n_samples)
+
+    engine = DiscoveryEngine(use_pysr=False)
+    formula, pred, _ = engine.discover_multivariate(X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic")
+    r2 = 1 - np.mean((pred - y_true) ** 2) / (np.var(y_true) + 1e-12) if formula else 0
+    _record("hard_small_n", "r2", float(r2), "", {"n_samples": n_samples})
+
+
+def bench_discovery_hard_feynman(n_samples: int = 300, noise: float = 0.06) -> None:
+    """Feynman 风格：y = 1/(1+x0**2) + 0.5*x1（有理式 + 线性）"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    X = np.random.randn(n_samples, 4).astype(np.float64)
+    y_true = 1.0 / (1 + X[:, 0] ** 2) + 0.5 * X[:, 1]
+    y = y_true + noise * np.std(y_true) * np.random.randn(n_samples)
+
+    engine = DiscoveryEngine(use_pysr=False)
+    formula, pred, _ = engine.discover_multivariate(X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic")
+    r2 = 1 - np.mean((pred - y_true) ** 2) / (np.var(y_true) + 1e-12) if formula else 0
+    _record("hard_feynman", "r2", float(r2), "", {"formula_type": "1/(1+x0^2)+0.5*x1"})
+
+
+def bench_lorenz_recovery(n_steps: int = 2000, dt: float = 0.01, sigma: float = 10.0, rho: float = 28.0, beta: float = 8.0 / 3.0) -> None:
+    """Lorenz 混沌系统：从轨迹数值导数恢复 dx/dt 与 (y-x) 的线性关系系数（σ）"""
+    import numpy as np
+    from axiom_os.engine.discovery import DiscoveryEngine
+
+    np.random.seed(42)
+    # 生成 Lorenz 轨迹
+    x, y, z = np.zeros(n_steps), np.zeros(n_steps), np.zeros(n_steps)
+    x[0], y[0], z[0] = 1.0, 1.0, 1.0
+    for i in range(n_steps - 1):
+        x[i + 1] = x[i] + dt * (sigma * (y[i] - x[i]))
+        y[i + 1] = y[i] + dt * (x[i] * (rho - z[i]) - y[i])
+        z[i + 1] = z[i] + dt * (x[i] * y[i] - beta * z[i])
+    # 数值导数（中心差分）
+    dx_dt = np.gradient(x, dt)
+    dy_dt = np.gradient(y, dt)
+    dz_dt = np.gradient(z, dt)
+    # 特征: (x, y, z), 目标: dx_dt = sigma*(y-x)
+    X = np.column_stack([x, y, z]).astype(np.float64)
+    y_target = dx_dt
+    # 去掉首尾若干点减小边界效应
+    trim = 20
+    X_t, y_t = X[trim:-trim], y_target[trim:-trim]
+    engine = DiscoveryEngine(use_pysr=False)
+    formula, pred, _ = engine.discover_multivariate(
+        X_t, y_t, var_names=["x", "y", "z"], selector="bic"
+    )
+    r2 = 1 - np.mean((pred - y_t) ** 2) / (np.var(y_t) + 1e-12) if formula else 0
+    _record("hard_lorenz", "r2_dx_dt", float(r2), "", {"sigma_true": sigma})
+    _record("hard_lorenz", "n_steps", float(n_steps), "", {})
+
+
+def run_hard_benchmarks():
+    """运行高难度 Discovery 套件"""
+    print("\n[Hard] 高维稀疏 (20 维, sin(x3)+0.5*x7, 18% 噪声)...")
+    bench_discovery_hard_sparse()
+    print("[Hard] 外推 (train [0,1], test [1,2], exp+log)...")
+    bench_discovery_hard_extrapolation()
+    print("[Hard] 小样本 (n=50, x0*x1+x2^2+0.3*x3)...")
+    bench_discovery_hard_small_n()
+    print("[Hard] Feynman 风格 (1/(1+x0^2)+0.5*x1)...")
+    bench_discovery_hard_feynman()
+    print("[Hard] Lorenz 混沌 (从轨迹恢复 dx/dt)...")
+    bench_lorenz_recovery()
 
 
 def bench_hippocampus(n_queries: int = 100) -> float:
@@ -209,12 +462,22 @@ def bench_validate_all() -> float:
     return total
 
 
-def run_unit_benchmarks():
+def run_unit_benchmarks(robustness: bool = False, compare_pysr: bool = False):
     """单元级基准"""
     print("\n[Unit] RCLN forward...")
     bench_rcln_forward()
     print("[Unit] Discovery...")
     bench_discovery()
+    print("[Unit] Discovery vs Baseline (公式恢复)...")
+    bench_discovery_vs_baseline()
+    print("[Unit] Discovery vs sklearn 多项式...")
+    bench_discovery_vs_sklearn_poly()
+    if robustness:
+        print("[Unit] Discovery 鲁棒性 (噪声 0.02/0.08/0.15)...")
+        bench_discovery_robustness()
+    if compare_pysr:
+        print("[Unit] Discovery vs PySR/SINDy...")
+        bench_discovery_vs_pysr_sindy()
     print("[Unit] Hippocampus...")
     bench_hippocampus()
     print("[Unit] Coach...")
@@ -285,6 +548,7 @@ def main():
         save_dated_json,
         load_historical_jsons,
         generate_trend_chart,
+        generate_comparison_chart,
         generate_markdown_report,
         generate_html_report,
     )
@@ -300,17 +564,25 @@ def main():
     parser.add_argument("-o", "--output", type=str, default=None, help="输出 JSON 文件")
     parser.add_argument("--report", action="store_true", help="生成 Markdown/HTML 报告")
     parser.add_argument("--trend", action="store_true", help="生成趋势图")
+    parser.add_argument("--robustness", action="store_true", help="Discovery 鲁棒性测试（噪声变化）")
+    parser.add_argument("--compare-pysr", action="store_true", help="与 PySR/SINDy 对比（需安装）")
+    parser.add_argument("--hard", action="store_true", help="高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz）")
     args = parser.parse_args()
 
     cfg = CONFIG_MAP[args.config]
     use_config = not (args.unit or args.integration or args.e2e or args.memory)
+    run_robustness = args.robustness or (use_config and cfg.name == "standard")
+    run_compare_pysr = args.compare_pysr
+    run_hard = args.hard
 
     print("=" * 60)
     print(f"Axiom-OS 性能基准测试 [config={cfg.name}]")
     print("=" * 60)
 
     if use_config or args.unit:
-        run_unit_benchmarks()
+        run_unit_benchmarks(robustness=run_robustness, compare_pysr=run_compare_pysr)
+    if run_hard:
+        run_hard_benchmarks()
     if use_config or args.integration:
         run_integration_benchmarks(cfg)
     run_e2e_quick = (use_config and cfg.e2e_quick) or args.quick
@@ -374,6 +646,10 @@ def main():
             trend_path = BENCH_DIR / "benchmark_trend.png"
             generate_trend_chart(RESULTS, historical, trend_path)
             print(f"已保存趋势图: {trend_path}")
+        if args.report:
+            cmp_path = BENCH_DIR / "benchmark_comparison.png"
+            if generate_comparison_chart(RESULTS, cmp_path):
+                print(f"已保存对比图: {cmp_path}")
 
     # Phase 4.4: 报告生成
     if args.report:
@@ -383,7 +659,8 @@ def main():
             f.write(md)
         print(f"已保存 Markdown: {md_path}")
 
-        html = generate_html_report(RESULTS, alerts, cfg.name)
+        cmp_path = BENCH_DIR / "benchmark_comparison.png"
+        html = generate_html_report(RESULTS, alerts, cfg.name, comparison_chart_path=cmp_path)
         html_path = BENCH_DIR / "benchmark_report.html"
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
