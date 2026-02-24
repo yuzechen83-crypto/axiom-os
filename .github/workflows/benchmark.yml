@@ -57,6 +57,7 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     environment: github-pages
+    continue-on-error: true  # 未启用 Pages 时 CI 仍通过
     steps:
       - name: Download benchmark artifacts
         uses: actions/download-artifact@v4
@@ -106,6 +107,7 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     environment: github-pages
+    continue-on-error: true  # 未启用 Pages 时 CI 仍通过
     steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
