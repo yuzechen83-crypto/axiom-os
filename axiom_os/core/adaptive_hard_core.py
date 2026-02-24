@@ -1,5 +1,8 @@
 """
 Adaptive Hard Core - 极端情况下自动放松物理约束
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+
 当系统逼近极端情况时，Hard Core 权重降低，保持 Soft Shell 灵活性。
 """
 

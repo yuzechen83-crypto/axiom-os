@@ -1,5 +1,7 @@
 """
 Axiom 智能分区模块 - 分区定义
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
 
 先学单一场景，再整合到复杂场景。分区按 domain、condition、complexity 定义。
 """

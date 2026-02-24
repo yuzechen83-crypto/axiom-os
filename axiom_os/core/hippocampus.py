@@ -1,5 +1,8 @@
 """
 Hippocampus - Knowledge Registry
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+
 Stores crystallized physical laws found by the system.
 
 RAG: retrieve_by_query supports keyword (default) and optional semantic embeddings.

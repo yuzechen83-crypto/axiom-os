@@ -1,5 +1,8 @@
 """
 Discovery Engine - Symbolic Regression & Dimensional Analysis
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+
 Extracts symbolic laws from RCLN's Soft Shell using Buckingham Pi constraints.
 Universal parametric discovery: fit all form candidates, select by AIC/BIC.
 """

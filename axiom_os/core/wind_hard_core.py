@@ -1,5 +1,8 @@
 """
 共享的湍流 Hard Core 实现
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+
 供 run_turbulence_full, main_turbulence_3d, main_turbulence_ageostrophic 使用
 """
 

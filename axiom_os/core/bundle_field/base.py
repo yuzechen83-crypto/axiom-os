@@ -1,5 +1,8 @@
 """
 元轴丛场 - 基空间
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+
 BaseSpace: Partition × Domain × Regime 的离散化，每点对应一个 Fiber
 """
 
