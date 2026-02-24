@@ -33,7 +33,7 @@ QUICK = BenchConfig(
     e2e_quick=False,
     turbulence_epochs=100,
     rar_galaxies=15,
-    rar_epochs=50,
+    rar_epochs=150,
     main_t_max=100,
     main_discover_interval=30,
 )
@@ -47,7 +47,7 @@ STANDARD = BenchConfig(
     e2e_quick=True,
     turbulence_epochs=200,
     rar_galaxies=20,
-    rar_epochs=100,
+    rar_epochs=400,
     main_t_max=200,
     main_discover_interval=50,
 )
@@ -61,7 +61,7 @@ FULL = BenchConfig(
     e2e_quick=False,
     turbulence_epochs=500,
     rar_galaxies=30,
-    rar_epochs=200,
+    rar_epochs=600,
     main_t_max=500,
     main_discover_interval=50,
 )

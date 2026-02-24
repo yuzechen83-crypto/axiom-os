@@ -141,8 +141,12 @@ def _extract_highlights(results: List[Dict[str, Any]]) -> List[tuple]:
         highlights.append(("Discovery R² 提升", f"{gain:+.1f}% vs 线性回归", "公式恢复任务"))
     # RAR R²
     r = by_key.get(("rar_discovery", "r2"))
+    r_log = by_key.get(("rar_discovery", "r2_log"))
     if r and r.get("value", 0) > 0:
-        highlights.append(("RAR 符号发现 R²", f"{r['value']:.3f}", "星系旋转曲线"))
+        s = f"{r['value']:.3f}"
+        if r_log and r_log.get("value") is not None:
+            s += f" (log 空间 R²={r_log['value']:.3f})"
+        highlights.append(("RAR 符号发现 R²", s, "星系旋转曲线"))
     # E2E 总耗时
     r = by_key.get(("e2e_quick_total", "elapsed_s"))
     if r and r.get("value", 0) > 0:
@@ -198,6 +202,13 @@ def _extract_highlights(results: List[Dict[str, Any]]) -> List[tuple]:
             highlights.append(("高难度 Discovery", ", ".join(parts), "稀疏/外推/小样本/Feynman/混沌"))
         if r_extrap_linear is not None:
             highlights.append(("外推线性基线", f"R²={r_extrap_linear:.2f}", "线性在 [1,2] 外推通常崩"))
+    # 约束因果发现
+    r_f1 = _get_value(results, "causal_discovery", "f1_edges")
+    if r_f1 is not None:
+        highlights.append(("因果发现 F1(边)", f"{r_f1:.2f}", "辛约束 + 条件独立"))
+    r_do = _get_value(results, "causal_do_effect", "mae")
+    if r_do is not None:
+        highlights.append(("SCM do 效应 MAE", f"{r_do:.3f}", "干预估计误差"))
     return highlights
 
 

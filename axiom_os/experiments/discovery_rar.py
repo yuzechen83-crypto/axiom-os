@@ -240,6 +240,7 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
 
     mse = np.mean((g_obs_pred - g_obs) ** 2)
     r2 = 1 - np.sum((g_obs_pred - g_obs) ** 2) / (np.sum((g_obs - g_obs.mean()) ** 2) + 1e-12)
+    r2_log = 1 - np.sum((log_g_obs_pred - log_g_obs) ** 2) / (np.sum((log_g_obs - log_g_obs.mean()) ** 2) + 1e-12)
 
     # Discovery: fit nu = g_obs / g_bar as function of g_bar
     nu = g_obs / (g_bar + 1e-14)
@@ -322,6 +323,7 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
         "log_g_bar": log_g_bar,
         "log_g_obs": log_g_obs,
         "r2": float(r2),
+        "r2_log": float(r2_log),
         "mse": float(mse),
         "formula_nu": formula_nu,
         "form_mond": form_mond,

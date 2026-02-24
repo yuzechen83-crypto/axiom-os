@@ -20,7 +20,11 @@ except ImportError:
             var_names=None,
             selector="bic",
             sample_weight=None,
+            allowed_input_indices=None,
         ):
             form = MultivariatePolyForm(alpha=1e-3, degree=2, include_interactions=True)
-            pred, coefs, formula = form.fit(X, y, var_names=var_names, sample_weight=sample_weight)
+            pred, coefs, formula = form.fit(
+                X, y, var_names=var_names, sample_weight=sample_weight,
+                allowed_input_indices=allowed_input_indices,
+            )
             return formula, pred, coefs

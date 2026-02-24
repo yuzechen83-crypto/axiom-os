@@ -36,6 +36,7 @@ from .symplectic_causal import (
     build_symplectic_causal_mask,
 )
 from .light_cone_filter import check_light_cone, filter_causal_edges_by_light_cone
+from .causal_constraints import allowed_edges, allowed_inputs_for_output
 from .perturbation import infer_partition_id, infer_partition_weights
 from .alpha_scheduler import (
     compute_alpha_free_energy,
@@ -122,6 +123,8 @@ __all__ = [
     "build_symplectic_causal_mask",
     "check_light_cone",
     "filter_causal_edges_by_light_cone",
+    "allowed_edges",
+    "allowed_inputs_for_output",
     "Partition",
     "RAR_PARTITIONS",
     "BATTERY_PARTITIONS",

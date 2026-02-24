@@ -5,7 +5,7 @@ Selection by AIC/BIC - no Lasso gate.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -357,30 +357,35 @@ def _build_multivariate_features(
     degree: int = 2,
     include_interactions: bool = True,
     include_log_z: bool = False,
+    allowed_input_indices: Optional[Set[int]] = None,
 ) -> Tuple[np.ndarray, List[str]]:
     """
     Build polynomial features for (t, x, y, z) or similar.
+    allowed_input_indices: 若给定，仅包含这些列对应的线性/二次/交互项（因果约束）。
     Returns (feature_matrix, feature_names).
     """
     X = np.asarray(X, dtype=np.float64)
     n, d = X.shape
     names = ["t", "x", "y", "z"][:d] if d <= 4 else [f"x{i}" for i in range(d)]
+    if allowed_input_indices is not None:
+        cols = sorted(allowed_input_indices)
+    else:
+        cols = list(range(d))
 
-    feats = [X]
-    fnames = [names[i] for i in range(d)]
+    feats = [X[:, i].reshape(-1, 1) for i in cols]
+    fnames = [names[i] for i in cols]
 
     if degree >= 2:
-        # Quadratic terms
-        for i in range(d):
+        for i in cols:
             feats.append((X[:, i] ** 2).reshape(-1, 1))
             fnames.append(f"{names[i]}^2")
-        if include_interactions and d >= 2:
-            for i in range(d):
-                for j in range(i + 1, d):
+        if include_interactions and len(cols) >= 2:
+            for ii, i in enumerate(cols):
+                for j in cols[ii + 1:]:
                     feats.append((X[:, i] * X[:, j]).reshape(-1, 1))
                     fnames.append(f"{names[i]}*{names[j]}")
 
-    if include_log_z and d >= 4:
+    if include_log_z and d >= 4 and 3 in cols:
         z = np.clip(X[:, 3], 1e-6, 1.0)
         feats.append(np.log1p(z).reshape(-1, 1))
         fnames.append("log(1+z)")
@@ -412,9 +417,11 @@ class MultivariatePolyForm:
         y: np.ndarray,
         var_names: Optional[List[str]] = None,
         sample_weight: Optional[np.ndarray] = None,
+        allowed_input_indices: Optional[Set[int]] = None,
     ) -> Tuple[np.ndarray, Dict[str, Any], str]:
         """
         Fit y = f(X). X: (N, D), y: (N,).
+        allowed_input_indices: 因果约束，仅使用这些列参与拟合（如辛结构下 dq/dt 只允许 p）。
         Returns (predictions, coefs_dict, formula_str).
         """
         X = np.asarray(X, dtype=np.float64)
@@ -431,22 +438,23 @@ class MultivariatePolyForm:
             X, degree=self.degree,
             include_interactions=self.include_interactions,
             include_log_z=self.include_log_z,
+            allowed_input_indices=allowed_input_indices,
         )
-        # Override fnames with var_names for first d columns
-        for i in range(min(d, len(var_names))):
-            fnames[i] = var_names[i]
-        for i in range(d, min(d + d, len(fnames))):
-            idx = i - d
-            if idx < len(var_names):
-                fnames[i] = f"{var_names[idx]}^2"
-        base = d + d
-        if self.include_interactions and d >= 2:
-            k = 0
-            for i in range(d):
-                for j in range(i + 1, d):
-                    if base + k < len(fnames):
-                        fnames[base + k] = f"{var_names[i]}*{var_names[j]}"
-                    k += 1
+        cols = sorted(allowed_input_indices) if allowed_input_indices is not None else list(range(d))
+        for k in range(len(cols)):
+            if cols[k] < len(var_names):
+                fnames[k] = var_names[cols[k]]
+        for k in range(len(cols)):
+            if len(cols) + k < len(fnames) and cols[k] < len(var_names):
+                fnames[len(cols) + k] = f"{var_names[cols[k]]}^2"
+        base = 2 * len(cols)
+        if self.include_interactions and len(cols) >= 2:
+            idx = 0
+            for ii in range(len(cols)):
+                for jj in range(ii + 1, len(cols)):
+                    if base + idx < len(fnames) and cols[ii] < len(var_names) and cols[jj] < len(var_names):
+                        fnames[base + idx] = f"{var_names[cols[ii]]}*{var_names[cols[jj]]}"
+                    idx += 1
 
         if not HAS_SKLEARN:
             # Fallback: numpy lstsq for linear fit

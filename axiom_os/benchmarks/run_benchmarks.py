@@ -313,6 +313,61 @@ def bench_lorenz_recovery(n_steps: int = 2000, dt: float = 0.01, sigma: float = 
     _record("hard_lorenz", "n_steps", float(n_steps), "", {})
 
 
+def bench_causal_discovery(n_samples: int = 500, state_dim: int = 4) -> None:
+    """约束因果发现：从线性 SCM 数据恢复 DAG，用辛约束过滤，计算边 F1。"""
+    import numpy as np
+    from axiom_os.core.causal_constraints import get_symplectic_causal_edges, allowed_edges
+    from axiom_os.causal.discovery import discover_causal_graph, adjacency_to_edges
+
+    np.random.seed(42)
+    n = state_dim
+    # 真实 DAG 为辛允许边的子集：0->2, 1->3（q 驱动 dp）
+    true_edges = [(0, 2), (1, 3)]
+    X = np.zeros((n_samples, n))
+    X[:, 0] = 0.5 * np.random.randn(n_samples)
+    X[:, 1] = 0.5 * np.random.randn(n_samples)
+    X[:, 2] = 0.6 * X[:, 0] + 0.3 * np.random.randn(n_samples)
+    X[:, 3] = 0.6 * X[:, 1] + 0.3 * np.random.randn(n_samples)
+    X = X.astype(np.float64)
+
+    allowed = allowed_edges(n, use_symplectic=True, use_light_cone=False)
+    adj = discover_causal_graph(X, allowed_edges=allowed, alpha=0.05, use_cond_indep=True, max_cond_size=1)
+    pred_edges = set(adjacency_to_edges(adj))
+    true_set = set(true_edges)
+    tp = len(pred_edges & true_set)
+    prec = tp / len(pred_edges) if pred_edges else 0
+    rec = tp / len(true_set) if true_set else 0
+    f1 = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
+    _record("causal_discovery", "f1_edges", float(f1), "", {"state_dim": n, "n_samples": n_samples})
+    _record("causal_discovery", "precision", float(prec), "", {})
+    _record("causal_discovery", "recall", float(rec), "", {})
+
+
+def bench_causal_do_effect(n_samples: int = 400) -> None:
+    """SCM do 干预效应：从数据拟合线性 SCM，估计 do(X_0=1) 的效应，与真实 SCM 对比。"""
+    import numpy as np
+    from axiom_os.causal.scm import LinearSCM, fit_linear_scm_from_data
+
+    np.random.seed(42)
+    B_true = np.array([
+        [0, 0, 0.5, 0],
+        [0, 0, 0, 0.5],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+    ], dtype=np.float64)
+    scm_true = LinearSCM(B_true)
+    X = scm_true.sample(n_samples, u_std=np.array([0.5, 0.5, 0.3, 0.3]), seed=42)
+    adj = (B_true != 0).astype(np.float64)
+    scm_fit = fit_linear_scm_from_data(X, adj)
+    x_one = X[0:1]
+    do_val = 1.0
+    out_true = scm_true.do({0: do_val}, x_one)
+    out_fit = scm_fit.do({0: do_val}, x_one)
+    mae = float(np.abs(out_true - out_fit).mean())
+    _record("causal_do_effect", "mae", mae, "", {"n_samples": n_samples})
+    _record("causal_do_effect", "ok", 1.0 if mae < 0.5 else 0.0, "", {})
+
+
 def run_hard_benchmarks():
     """运行高难度 Discovery 套件"""
     print("\n[Hard] 高维稀疏 (20 维, sin(x3)+0.5*x7, 18% 噪声)...")
@@ -325,6 +380,10 @@ def run_hard_benchmarks():
     bench_discovery_hard_feynman()
     print("[Hard] Lorenz 混沌 (从轨迹恢复 dx/dt)...")
     bench_lorenz_recovery()
+    print("[Hard] 约束因果发现 (辛结构 DAG 恢复)...")
+    bench_causal_discovery()
+    print("[Hard] SCM do 干预效应...")
+    bench_causal_do_effect()
 
 
 def bench_hippocampus(n_queries: int = 100) -> float:
@@ -430,6 +489,8 @@ def bench_rar(n_galaxies: int = 20, epochs: int = 100, batch_size: int = None) -
     ok = "error" not in res
     _record("rar_discovery", "elapsed_s", elapsed, "s", {"n_galaxies": n_galaxies, "epochs": epochs, "ok": ok})
     _record("rar_discovery", "r2", res.get("r2", 0), "", {"n_samples": res.get("n_samples", 0)})
+    if res.get("r2_log") is not None:
+        _record("rar_discovery", "r2_log", res["r2_log"], "", {})
     return elapsed
 
 
