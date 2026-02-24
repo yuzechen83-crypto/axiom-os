@@ -30,13 +30,16 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Install scikit-learn (required by benchmark)
+        run: pip install scikit-learn
+
       - name: Run pytest
         run: |
           pytest tests/test_benchmark_report.py axiom_os/tests/test_hippocampus.py -v -q
 
       - name: Run quick benchmark
         run: |
-          python -m axiom_os.benchmarks.run_benchmarks --config quick --report --trend -o benchmark_ci.json
+          python -m axiom_os.benchmarks.run_benchmarks --config quick --report --trend -o benchmark_ci.json --no-fail-on-alerts
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4

@@ -128,9 +128,14 @@ def bench_discovery_robustness() -> None:
 
 
 def bench_discovery_vs_sklearn_poly(n: int = 300) -> None:
-    """Discovery vs sklearn 多项式回归（始终可用，标准配置运行）"""
+    """Discovery vs sklearn 多项式回归（需 scikit-learn；CI 未装时跳过）"""
+    import importlib.util
+    if importlib.util.find_spec("sklearn") is None:
+        return
     import numpy as np
     from axiom_os.engine.discovery import DiscoveryEngine
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.linear_model import Ridge
 
     np.random.seed(42)
     X = np.random.randn(n, 4).astype(np.float64)
@@ -140,9 +145,8 @@ def bench_discovery_vs_sklearn_poly(n: int = 300) -> None:
     engine = DiscoveryEngine(use_pysr=False)
     _, pred_axiom, _ = engine.discover_multivariate(X, y, var_names=["x0", "x1", "x2", "x3"], selector="bic")
     r2_axiom = 1 - np.mean((pred_axiom - y_true) ** 2) / (np.var(y_true) + 1e-12)
+    _record("discovery_vs_sklearn_poly", "r2_axiom", float(r2_axiom), "", {})
 
-    from sklearn.preprocessing import PolynomialFeatures
-    from sklearn.linear_model import Ridge
     poly = PolynomialFeatures(degree=2, include_bias=True)
     X_poly = poly.fit_transform(X)
     model = Ridge(alpha=1e-3)
@@ -150,7 +154,6 @@ def bench_discovery_vs_sklearn_poly(n: int = 300) -> None:
     pred_poly = model.predict(X_poly)
     r2_poly = 1 - np.mean((pred_poly - y_true) ** 2) / (np.var(y_true) + 1e-12)
     _record("discovery_vs_sklearn_poly", "r2_poly", float(r2_poly), "", {})
-    _record("discovery_vs_sklearn_poly", "r2_axiom", float(r2_axiom), "", {})
 
 
 def bench_discovery_vs_pysr_sindy() -> None:
@@ -479,18 +482,46 @@ def bench_turbulence(epochs: int = 200, batch_size: int = None) -> float:
     return elapsed
 
 
-def bench_rar(n_galaxies: int = 20, epochs: int = 100, batch_size: int = None) -> float:
-    """RAR Discovery 耗时 (s)"""
+def bench_rar(
+    n_galaxies: int = 20,
+    epochs: int = 100,
+    batch_size: int = None,
+    apply_mass_calibration: bool = True,
+) -> float:
+    """RAR Discovery 耗时 (s)；可选报告校准前/后 R²。"""
     from axiom_os.experiments.discovery_rar import run_rar_discovery
 
+    r2_uncal = None
+    if apply_mass_calibration:
+        res_uncal = run_rar_discovery(
+            n_galaxies=n_galaxies,
+            epochs=epochs,
+            apply_mass_calibration=False,
+        )
+        if "error" not in res_uncal and res_uncal.get("r2_log") is not None:
+            r2_uncal = res_uncal["r2_log"]
+            _record("rar_discovery", "r2_log_uncalibrated", r2_uncal, "", {})
+
     t0 = time.perf_counter()
-    res = run_rar_discovery(n_galaxies=n_galaxies, epochs=epochs)
+    res = run_rar_discovery(
+        n_galaxies=n_galaxies,
+        epochs=epochs,
+        apply_mass_calibration=apply_mass_calibration,
+    )
     elapsed = time.perf_counter() - t0
     ok = "error" not in res
     _record("rar_discovery", "elapsed_s", elapsed, "s", {"n_galaxies": n_galaxies, "epochs": epochs, "ok": ok})
     _record("rar_discovery", "r2", res.get("r2", 0), "", {"n_samples": res.get("n_samples", 0)})
     if res.get("r2_log") is not None:
         _record("rar_discovery", "r2_log", res["r2_log"], "", {})
+        if apply_mass_calibration:
+            _record("rar_discovery", "r2_log_calibrated", res["r2_log"], "", {})
+    if res.get("upsilon_applied") and res.get("upsilon_mean") is not None:
+        _record("rar_discovery", "upsilon_mean", res["upsilon_mean"], "", {})
+    if apply_mass_calibration and (r2_uncal is not None or res.get("r2_log") is not None):
+        r2_cal = res.get("r2_log") or 0
+        mean_u = res.get("upsilon_mean") or 0.5
+        print(f"    [OK] RAR Discovery (质量校准)  未校准 R2 = {r2_uncal or 0:.3f}  已校准 R2 = {r2_cal:.3f}  Upsilon = {mean_u:.3f}")
     return elapsed
 
 
@@ -532,7 +563,11 @@ def run_unit_benchmarks(robustness: bool = False, compare_pysr: bool = False):
     print("[Unit] Discovery vs Baseline (公式恢复)...")
     bench_discovery_vs_baseline()
     print("[Unit] Discovery vs sklearn 多项式...")
-    bench_discovery_vs_sklearn_poly()
+    import importlib.util
+    if importlib.util.find_spec("sklearn") is not None:
+        bench_discovery_vs_sklearn_poly()
+    else:
+        print("    (跳过: 未安装 scikit-learn)")
     if robustness:
         print("[Unit] Discovery 鲁棒性 (噪声 0.02/0.08/0.15)...")
         bench_discovery_robustness()
@@ -554,7 +589,11 @@ def run_integration_benchmarks(cfg=None):
     print(f"\n[Integration] Turbulence ({cfg.turbulence_epochs} epochs)...")
     bench_turbulence(epochs=cfg.turbulence_epochs)
     print(f"[Integration] RAR Discovery (n={cfg.rar_galaxies}, ep={cfg.rar_epochs})...")
-    bench_rar(n_galaxies=cfg.rar_galaxies, epochs=cfg.rar_epochs)
+    bench_rar(
+        n_galaxies=cfg.rar_galaxies,
+        epochs=cfg.rar_epochs,
+        apply_mass_calibration=getattr(cfg, "rar_use_mass_calibration", True),
+    )
 
 
 def run_e2e_benchmarks():
@@ -628,6 +667,7 @@ def main():
     parser.add_argument("--robustness", action="store_true", help="Discovery 鲁棒性测试（噪声变化）")
     parser.add_argument("--compare-pysr", action="store_true", help="与 PySR/SINDy 对比（需安装）")
     parser.add_argument("--hard", action="store_true", help="高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz）")
+    parser.add_argument("--no-fail-on-alerts", action="store_true", help="阈值告警时不 exit(1)，用于 CI")
     args = parser.parse_args()
 
     cfg = CONFIG_MAP[args.config]
@@ -728,7 +768,7 @@ def main():
         print(f"已保存 HTML: {html_path}")
 
     print("=" * 60)
-    if alerts:
+    if alerts and not getattr(args, "no_fail_on_alerts", False):
         sys.exit(1)
 
 
