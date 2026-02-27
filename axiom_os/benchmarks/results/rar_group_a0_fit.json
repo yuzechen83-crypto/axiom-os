@@ -1,0 +1,29 @@
+{
+  "data_source": "RAR.mrt (McGaugh+2016, ~2700 pts)",
+  "split": "g_bar_tertiles",
+  "group_a": {
+    "label": "low_g_bar (bottom 33%)",
+    "g0": 3700.0,
+    "a0_si": 1.199088337176552e-10,
+    "n_galaxies": null,
+    "n_points": 909
+  },
+  "group_b": {
+    "label": "high_g_bar (top 33%)",
+    "g0": 3700.0,
+    "a0_si": 1.199088337176552e-10,
+    "n_galaxies": null,
+    "n_points": 894
+  },
+  "ratio_a0_a_over_b": 1.0,
+  "bootstrap": {
+    "low_g_bar_(bottom_33%)_ci68": [
+      1.199088337176552e-10,
+      1.199088337176552e-10
+    ],
+    "high_g_bar_(top_33%)_ci68": [
+      1.199088337176552e-10,
+      1.199088337176552e-10
+    ]
+  }
+}

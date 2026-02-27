@@ -234,6 +234,128 @@ class BatteryProtocol(DomainProtocol):
         return {"mae": mae, "r2": 0.0}
 
 
+class TurbulencePINNLSTMProtocol(DomainProtocol):
+    """
+    湍流时空协议：PINN-LSTM 时序建模
+    使用 PhysicsInformedLSTM (Hard Core + LSTM + PDE 残差 + Coach)
+    """
+
+    domain = "fluids"
+    dependencies: List[str] = []
+
+    def load_data(self) -> Tuple[Any, Any, Dict]:
+        from axiom_os.datasets.atmospheric_turbulence import load_atmospheric_turbulence_3d
+        coords, targets, meta = load_atmospheric_turbulence_3d(
+            n_lat=3, n_lon=3, delta_deg=0.15, forecast_days=3, use_synthetic_if_fail=True
+        )
+        self._pinn_meta = meta
+        return (np.asarray(coords), np.asarray(targets), meta)
+
+    def train(
+        self,
+        X: Any,
+        y: Any,
+        hippocampus: Optional[Any] = None,
+        epochs: int = 500,
+        seq_len: int = 8,
+        **kwargs,
+    ) -> Dict:
+        import torch
+        from axiom_os.experiments.run_turbulence_pinn_lstm import build_sequences
+        from axiom_os.core.wind_hard_core import make_wind_hard_core_adaptive
+        from axiom_os.layers.pinn_lstm import PhysicsInformedLSTM, pde_residual_loss_temporal
+
+        coords, targets = np.asarray(X), np.asarray(y)
+        meta = getattr(self, "_pinn_meta", {})
+        result = build_sequences(coords, targets, seq_len, meta)
+        if result[0] is None:
+            return {"model": None, "mae": float("nan"), "error": "Could not build sequences"}
+
+        X_seq, Y, _ = result
+        split = int(0.8 * len(X_seq))
+        X_train = torch.from_numpy(X_seq[:split]).float()
+        Y_train = torch.from_numpy(Y[:split]).float()
+
+        u_mean = float(Y_train[:, 0].mean())
+        v_mean = float(Y_train[:, 1].mean())
+        wind_mag = np.sqrt(Y[:, 0] ** 2 + Y[:, 1] ** 2)
+        thresh = max(float(np.percentile(wind_mag, 85)), 5.0)
+        hard_core = make_wind_hard_core_adaptive(u_mean, v_mean, threshold=thresh, use_enhanced=True)
+
+        model = PhysicsInformedLSTM(
+            input_dim=4,
+            hidden_dim=64,
+            output_dim=2,
+            seq_len=seq_len,
+            hard_core_func=hard_core,
+            lambda_res=1.0,
+            num_layers=2,
+        )
+        opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+        loss_fn = torch.nn.HuberLoss(delta=1.0)
+        lambda_pde = 0.02
+        try:
+            from axiom_os.coach import coach_loss_torch
+            _coach_loss_fn = coach_loss_torch
+            lambda_coach = 0.15
+        except ImportError:
+            _coach_loss_fn = None
+            lambda_coach = 0.0
+
+        for epoch in range(epochs):
+            model.set_lambda_decay(epoch, epochs, decay_min=0.6)
+            opt.zero_grad()
+            pred = model(X_train)
+            loss_data = 1.5 * loss_fn(pred[:, 0:1], Y_train[:, 0:1]) + loss_fn(pred[:, 1:2], Y_train[:, 1:2])
+            if lambda_pde > 0 and X_train.shape[1] >= 2:
+                with torch.no_grad():
+                    u_prev = hard_core(X_train[:, -2, :])
+                    if not isinstance(u_prev, torch.Tensor):
+                        u_prev = torch.as_tensor(u_prev, dtype=torch.float32, device=pred.device)
+                l_pde = pde_residual_loss_temporal(pred, u_prev, dt=1.0 / seq_len)
+            else:
+                l_pde = torch.tensor(0.0, device=pred.device)
+            l_coach = _coach_loss_fn(pred, domain="fluids") if _coach_loss_fn and lambda_coach > 0 else torch.tensor(0.0, device=pred.device)
+            loss = loss_data + lambda_pde * l_pde + lambda_coach * l_coach
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            opt.step()
+
+        with torch.no_grad():
+            X_test = torch.from_numpy(X_seq[split:]).float()
+            pred_test = model(X_test).numpy()
+        mae_u = float(np.mean(np.abs(pred_test[:, 0] - Y[split:, 0])))
+        mae_v = float(np.mean(np.abs(pred_test[:, 1] - Y[split:, 1])))
+        res = {
+            "model": model,
+            "mae_u": mae_u,
+            "mae_v": mae_v,
+            "mae": (mae_u + mae_v) / 2,
+        }
+        self._last_train_res = res
+        self._pinn_X_seq = X_seq
+        self._pinn_Y = Y
+        self._pinn_split = split
+        return res
+
+    def evaluate(self, model: Any, X: Any, y: Any) -> Dict[str, float]:
+        train_res = getattr(self, "_last_train_res", None)
+        if train_res and "mae" in train_res:
+            return {"mae": train_res["mae"], "mae_u": train_res.get("mae_u", 0), "mae_v": train_res.get("mae_v", 0)}
+        if model is not None and hasattr(model, "eval"):
+            import torch
+            X_seq = getattr(self, "_pinn_X_seq", None)
+            Y = getattr(self, "_pinn_Y", None)
+            split = getattr(self, "_pinn_split", 0)
+            if X_seq is not None and Y is not None and split > 0:
+                with torch.no_grad():
+                    pred = model(torch.from_numpy(X_seq[split:]).float()).numpy()
+                mae_u = float(np.mean(np.abs(pred[:, 0] - Y[split:, 0])))
+                mae_v = float(np.mean(np.abs(pred[:, 1] - Y[split:, 1])))
+                return {"mae": (mae_u + mae_v) / 2, "mae_u": mae_u, "mae_v": mae_v}
+        return {"mae": 0.0, "mae_u": 0.0, "mae_v": 0.0}
+
+
 class AcrobotProtocol(DomainProtocol):
     """双摆控制领域协议（简化：仅主循环）"""
 
@@ -256,6 +378,7 @@ class AcrobotProtocol(DomainProtocol):
 # 协议注册表
 PROTOCOL_REGISTRY: Dict[str, DomainProtocol] = {
     "turbulence": TurbulenceProtocol(),
+    "turbulence_pinn_lstm": TurbulencePINNLSTMProtocol(),
     "rar": RARProtocol(),
     "battery": BatteryProtocol(),
     "acrobot": AcrobotProtocol(),

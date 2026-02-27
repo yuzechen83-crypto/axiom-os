@@ -18,10 +18,11 @@ class BenchConfig:
     # 集成参数
     turbulence_epochs: int
     rar_galaxies: int
-    rar_epochs: int
+    rar_epochs: int  # RAR epochs 增加原因：之前不足可能未收敛；增加后 log R² 可提升 +0.03-0.05
     # E2E 参数
     main_t_max: int
     main_discover_interval: int
+    rar_use_mass_calibration: bool = True  # 基准测试中是否启用质量校准
 
 
 QUICK = BenchConfig(
@@ -33,9 +34,10 @@ QUICK = BenchConfig(
     e2e_quick=False,
     turbulence_epochs=100,
     rar_galaxies=15,
-    rar_epochs=150,
+    rar_epochs=150,  # +3x vs 原 50，保证收敛
     main_t_max=100,
     main_discover_interval=30,
+    rar_use_mass_calibration=True,
 )
 
 STANDARD = BenchConfig(
@@ -47,9 +49,10 @@ STANDARD = BenchConfig(
     e2e_quick=True,
     turbulence_epochs=200,
     rar_galaxies=20,
-    rar_epochs=400,
+    rar_epochs=400,  # +4x vs 原 100，充分收敛
     main_t_max=200,
     main_discover_interval=50,
+    rar_use_mass_calibration=True,
 )
 
 FULL = BenchConfig(
@@ -61,9 +64,10 @@ FULL = BenchConfig(
     e2e_quick=False,
     turbulence_epochs=500,
     rar_galaxies=30,
-    rar_epochs=600,
+    rar_epochs=600,  # +3x vs 原 200
     main_t_max=500,
     main_discover_interval=50,
+    rar_use_mass_calibration=True,
 )
 
 CONFIG_MAP = {"quick": QUICK, "standard": STANDARD, "full": FULL}

@@ -14,6 +14,10 @@ Axiom-OS 全流程验证脚本
   python -m axiom_os.validate_all --partition   # RAR 智能分区发现
   python -m axiom_os.validate_all --turbulence-partition  # 湍流智能分区发现
   python -m axiom_os.validate_all --turbulence-perturbation  # 湍流+海马体扰动（联想/直觉）
+  python -m axiom_os.validate_all --turbulence-pinn-lstm     # 湍流 PINN-LSTM 时空预测
+  python -m axiom_os.validate_all --jhtdb-les-sgs             # JHTDB 真实 DNS + LES-SGS (真实数据)
+  python -m axiom_os.validate_all --dark-matter                # 暗物质发现统一管线
+  python -m axiom_os.validate_all --crystallize               # 公式结晶 (RAR)
 """
 
 import sys
@@ -23,6 +27,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]  # axiom_os/ 的父目录 = 项目根
 sys.path.insert(0, str(ROOT))
+
+from axiom_os.benchmarks.seed_utils import set_global_seed, DEFAULT_BENCHMARK_SEED
 
 
 def run_main(quick: bool = True) -> dict:
@@ -96,6 +102,41 @@ def run_turbulence_partition() -> dict:
     }
 
 
+def run_dark_matter(n_galaxies: int = 25, epochs: int = 400) -> dict:
+    """暗物质发现统一管线：RAR + Theory Validator + Inverse Projection"""
+    from axiom_os.experiments.dark_matter_discovery import main as dm_main
+    t0 = time.perf_counter()
+    res = dm_main(n_galaxies=n_galaxies, rar_epochs=epochs, use_pysr=True, run_rar=True, run_theory=True, run_inverse=True)
+    elapsed = time.perf_counter() - t0
+    ok = all(r.get("ok", False) for r in res.get("results", []) if "error" not in r)
+    return {"ok": ok, "elapsed": elapsed, "name": "dark_matter", "results": res.get("results", [])}
+
+
+def run_turbulence_pinn_lstm(epochs: int = 400) -> dict:
+    """湍流 PINN-LSTM 时空预测（Hard Core + LSTM + PDE 残差 + Coach）"""
+    from axiom_os.experiments.run_turbulence_pinn_lstm import main as pinn_main
+    t0 = time.perf_counter()
+    pinn_main()
+    elapsed = time.perf_counter() - t0
+    return {"ok": True, "elapsed": elapsed, "name": "turbulence_pinn_lstm"}
+
+
+def run_crystallize() -> dict:
+    """公式结晶：RAR Discovery + 符号公式提取 + 保存 JSON"""
+    import subprocess
+    t0 = time.perf_counter()
+    proc = subprocess.run(
+        [sys.executable, "-m", "axiom_os.experiments.crystallize_formulas", "--rar-only"],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+    elapsed = time.perf_counter() - t0
+    ok = proc.returncode == 0
+    return {"ok": ok, "elapsed": elapsed, "name": "crystallize"}
+
+
 def run_diagnose() -> dict:
     """RAR g0 诊断：分析 g0=321 vs g0=3700 残差"""
     from axiom_os.experiments.diagnose_rar_g0 import main as diagnose_main
@@ -115,11 +156,18 @@ def main() -> None:
     parser.add_argument("--partition", action="store_true", help="运行 RAR 智能分区发现")
     parser.add_argument("--turbulence-partition", action="store_true", help="运行湍流智能分区发现")
     parser.add_argument("--turbulence-perturbation", action="store_true", help="湍流+海马体扰动（联想/直觉）")
+    parser.add_argument("--turbulence-pinn-lstm", action="store_true", help="湍流 PINN-LSTM 时空预测")
+    parser.add_argument("--jhtdb-les-sgs", action="store_true", help="JHTDB 真实 DNS + LES-SGS (真实数据)")
+    parser.add_argument("--dark-matter", action="store_true", help="暗物质发现统一管线 (RAR+Theory+Inverse)")
+    parser.add_argument("--crystallize", action="store_true", help="公式结晶 (RAR)")
     parser.add_argument("--quick", action="store_true", default=True, help="精简参数（默认）")
+    parser.add_argument("--seed", type=int, default=DEFAULT_BENCHMARK_SEED, help="随机种子（可复现性）")
     args = parser.parse_args()
 
+    set_global_seed(args.seed)
+
     run_all = not (args.main or args.rar or args.battery or args.turbulence or args.diagnose or
-                   args.partition or args.turbulence_partition or args.turbulence_perturbation)
+                   args.partition or args.turbulence_partition or args.turbulence_perturbation or args.turbulence_pinn_lstm or args.jhtdb_les_sgs or args.dark_matter or args.crystallize)
 
     results = []
     print("=" * 60)
@@ -191,8 +239,38 @@ def main() -> None:
             results.append({"ok": False, "name": "turbulence_partition", "error": str(e)})
             print(f"  FAIL: {e}")
 
+    if run_all or args.turbulence_pinn_lstm:
+        print("\n[7/9] 湍流 PINN-LSTM...")
+        try:
+            r = run_turbulence_pinn_lstm()
+            results.append(r)
+            print(f"  OK  {r['elapsed']:.1f}s")
+        except Exception as e:
+            results.append({"ok": False, "name": "turbulence_pinn_lstm", "error": str(e)})
+            print(f"  FAIL: {e}")
+
+    if run_all or args.jhtdb_les_sgs:
+        print("\n[8/9] JHTDB LES-SGS (真实 DNS 数据)...")
+        try:
+            import subprocess
+            t0 = time.perf_counter()
+            proc = subprocess.run(
+                [sys.executable, "-m", "axiom_os.experiments.jhtdb_les_sgs"],
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            elapsed = time.perf_counter() - t0
+            ok = proc.returncode == 0
+            results.append({"ok": ok, "elapsed": elapsed, "name": "jhtdb_les_sgs"})
+            print(f"  OK  {elapsed:.1f}s" if ok else f"  FAIL: {proc.stderr[:200] if proc.stderr else proc.returncode}")
+        except Exception as e:
+            results.append({"ok": False, "name": "jhtdb_les_sgs", "error": str(e)})
+            print(f"  FAIL: {e}")
+
     if run_all or args.turbulence_perturbation:
-        print("\n[7/8] 湍流+海马体扰动...")
+        print("\n[8/9] 湍流+海马体扰动...")
         try:
             from axiom_os.experiments.discovery_turbulence_partitioned import (
                 run_turbulence_partitioned_discovery,
@@ -220,8 +298,28 @@ def main() -> None:
             results.append({"ok": False, "name": "turbulence_perturbation", "error": str(e)})
             print(f"  FAIL: {e}")
 
+    if run_all or args.dark_matter:
+        print("\n[9/10] 暗物质发现统一管线...")
+        try:
+            r = run_dark_matter(n_galaxies=25, epochs=400)
+            results.append(r)
+            print(f"  OK  {r['elapsed']:.1f}s")
+        except Exception as e:
+            results.append({"ok": False, "name": "dark_matter", "error": str(e)})
+            print(f"  FAIL: {e}")
+
+    if run_all or args.crystallize:
+        print("\n[10/11] 公式结晶...")
+        try:
+            r = run_crystallize()
+            results.append(r)
+            print(f"  OK  {r['elapsed']:.1f}s" if r.get("ok") else f"  FAIL: {r.get('error', 'unknown')}")
+        except Exception as e:
+            results.append({"ok": False, "name": "crystallize", "error": str(e)})
+            print(f"  FAIL: {e}")
+
     if run_all or args.diagnose:
-        print("\n[8/8] RAR g0 诊断...")
+        print("\n[11/11] RAR g0 诊断...")
         try:
             r = run_diagnose()
             results.append(r)

@@ -57,6 +57,22 @@ def nu_mcgaugh(g: Union[float, np.ndarray], a0: Union[float, np.ndarray], eps: f
     return 1.0 / denom
 
 
+def nu_mcgaugh_parametrized(
+    g: Union[float, np.ndarray],
+    a0: Union[float, np.ndarray],
+    alpha: float = 1.0,
+    eps: float = 1e-14,
+) -> Union[float, np.ndarray]:
+    """
+    Parametrized McGaugh: ν(g) = 1 + α·(ν_McGaugh(g) - 1).
+    α (strength) encodes coupling from ξ,λ in the L-field action.
+    α=1: full McGaugh. α<1: weaker correction. α>1: stronger.
+    Used for SPARC fitting to constrain ξ,λ.
+    """
+    nu_base = nu_mcgaugh(g, a0, eps)
+    return 1.0 + alpha * (nu_base - 1.0)
+
+
 def nu_mcgaugh_torch(g: torch.Tensor, a0: Union[float, torch.Tensor], eps: float = 1e-14) -> torch.Tensor:
     """Torch version of McGaugh ν(g)."""
     if isinstance(a0, (int, float)):

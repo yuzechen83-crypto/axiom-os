@@ -1,0 +1,81 @@
+{
+  "outlier_sets": [
+    [],
+    [
+      "MusketBall"
+    ],
+    [
+      "CIZA_J2242"
+    ],
+    [
+      "MACS_J0018"
+    ],
+    [
+      "MusketBall",
+      "CIZA_J2242"
+    ],
+    [
+      "MusketBall",
+      "MACS_J0018"
+    ],
+    [
+      "CIZA_J2242",
+      "MACS_J0018"
+    ],
+    [
+      "MusketBall",
+      "CIZA_J2242",
+      "MACS_J0018"
+    ]
+  ],
+  "results": [
+    {
+      "exclude": "all",
+      "n": 9,
+      "loo_mse": 0.16247428469824424,
+      "loo_mae": 0.3165442101947576
+    },
+    {
+      "exclude": "MusketBall",
+      "n": 8,
+      "loo_mse": 9.080281601056598,
+      "loo_mae": 1.306867896393439
+    },
+    {
+      "exclude": "CIZA_J2242",
+      "n": 8,
+      "loo_mse": 1.7603561712015756,
+      "loo_mae": 0.6819915183753671
+    },
+    {
+      "exclude": "MACS_J0018",
+      "n": 8,
+      "loo_mse": 0.16271074998911533,
+      "loo_mae": 0.30119209929144725
+    },
+    {
+      "exclude": "MusketBall,CIZA_J2242",
+      "n": 7,
+      "loo_mse": 0.09862196059073393,
+      "loo_mae": 0.2838341486978052
+    },
+    {
+      "exclude": "MusketBall,MACS_J0018",
+      "n": 7,
+      "loo_mse": 0.6393086692972884,
+      "loo_mae": 0.5006599085359514
+    },
+    {
+      "exclude": "CIZA_J2242,MACS_J0018",
+      "n": 7,
+      "loo_mse": 0.5245695883164326,
+      "loo_mae": 0.4637824127939058
+    },
+    {
+      "exclude": "MusketBall,CIZA_J2242,MACS_J0018",
+      "n": 6,
+      "loo_mse": 0.1287159489096318,
+      "loo_mae": 0.32801463057972974
+    }
+  ]
+}

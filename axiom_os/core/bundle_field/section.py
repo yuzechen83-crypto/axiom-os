@@ -16,7 +16,7 @@ from .axes import BasePoint, Regime
 def _infer_partition_id(x: np.ndarray, domain: str) -> Optional[str]:
     """推断分区 id，避免循环导入"""
     try:
-        from ..perturbation import infer_partition_id
+        from axiom_os.core.perturbation import infer_partition_id
         return infer_partition_id(x, domain)
     except ImportError:
         return None

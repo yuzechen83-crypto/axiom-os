@@ -2,7 +2,7 @@
 
 物理不变尺度锚定 + 规范耦合神经元的集成框架，实现「物理公理兜底 + 未知边界探索」双重目标。
 
-> **核心技术保护**：部分算法为专有技术，详见 [PROPRIETARY_COMPONENTS.md](PROPRIETARY_COMPONENTS.md)。
+> **核心技术声明**：详见 [PROPRIETARY_COMPONENTS.md](PROPRIETARY_COMPONENTS.md)。全部实现已开源，可直接调取。
 
 ## 框架定义
 
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 python run_spnn_example.py
 ```
 
-**可运行性**：无 `axiom_core_proprietary` 时，基准与公式发现 Demo 使用内置多项式回退，仍可完整运行。
+**可运行性**：全部组件已合并至 axiom_os，克隆后即可完整运行。
 
 ## 基准测试 (Benchmark)
 
@@ -58,6 +58,43 @@ python -m axiom_os.benchmarks.run_benchmarks --config quick --compare-pysr --rep
 
 # 高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz 混沌）
 python -m axiom_os.benchmarks.run_benchmarks --hard --report
+
+# 可复现性：指定随机种子
+python -m axiom_os.benchmarks.run_benchmarks --config quick --seed 42 --report
+
+# Feynman 风格公式发现基准（对标 SRBench）
+python -m axiom_os.experiments.benchmark_feynman --seed 42 --n-seeds 3
+
+# 消融实验：Discovery / RCLN
+python -m axiom_os.diagnostics.discovery_ablation
+python -m axiom_os.diagnostics.rcln_ablation --epochs 100
+
+# 暗物质发现统一管线 (RAR + Theory Validator + Inverse Projection)
+python -m axiom_os.experiments.dark_matter_discovery
+python -m axiom_os.validate_all --dark-matter
+
+# JHTDB 真实湍流 LES-SGS（TBNN + FNO + Smagorinsky 对比）
+python -m axiom_os.experiments.jhtdb_les_sgs
+python -m axiom_os.validate_all --jhtdb-les-sgs
+# 严格空间划分测试
+python -m pytest tests/test_jhtdb_strict.py tests/test_jhtdb_fno.py -v -s
+
+# 公式结晶（RAR 符号公式提取 + 保存 JSON）
+python -m axiom_os.experiments.crystallize_formulas --rar-only
+python -m axiom_os.validate_all --crystallize
+
+# Discovery 发现能力基准（发现公式 vs 已知定律 相似度）
+python -m axiom_os.benchmarks.discovery_capability_benchmark
+
+# Falsification Test: a0 普适性（Gas vs Star 分组）
+python -m axiom_os.experiments.falsify_universality --n-galaxies 30
+
+# Falsification Test: 太阳系约束（高加速度区 Newton 极限）
+python -m axiom_os.experiments.falsify_solar
+
+# Falsification Test: 红移演化（a0(z) Static vs Dynamic）
+python -m axiom_os.experiments.falsify_redshift
+# 真实数据: --data path/to/genzel2017.csv (格式: z,R_kpc,V_rot_km_s,M_bary_Msun)
 ```
 
 报告输出：`axiom_os/benchmarks/results/`（JSON、趋势图、Markdown、HTML、**Discovery vs Baseline 对比图**）
@@ -65,6 +102,33 @@ python -m axiom_os.benchmarks.run_benchmarks --hard --report
 报告含**亮点摘要**：RCLN 吞吐、Discovery R² 提升 vs 线性回归、RAR 符号发现 R²。
 
 **发布到 GitHub**：push 到 `main` 时 CI 会自动跑基准并发布到 GitHub Pages。在仓库 **Settings → Pages** 中来源选 **GitHub Actions**，即可在 `https://<org>.github.io/<repo>/` 查看最新报告（`report.html`、`latest.json`）。
+
+## 湍流建模 (JHTDB LES-SGS)
+
+真实 DNS 数据湍流闭合：Johns Hopkins Turbulence Database → 粗网格速度 → SGS 应力 τ_ij。
+
+| 方法 | R²_test | 说明 |
+|------|---------|------|
+| Smagorinsky | ~0 | 涡粘基线 |
+| TBNN | ~0.15 | Pope 不变量 + 张量基归一化 |
+| FNO | ~0.26 | 3D Fourier 非局部映射 |
+| PINN-LSTM | ~0.85 | 速度预测（不同任务） |
+
+```bash
+python -m axiom_os.experiments.jhtdb_les_sgs
+python -m pytest tests/test_jhtdb_strict.py tests/test_jhtdb_fno.py -v -s
+```
+
+输出：`jhtdb_les_sgs.json`、`jhtdb_les_sgs_3d.png`、`jhtdb_les_sgs_comparison.png`。
+
+## 公式结晶
+
+RAR Discovery 符号公式提取，保存至 `crystallized_formulas.json`。
+
+```bash
+python -m axiom_os.experiments.crystallize_formulas --rar-only
+python -m axiom_os.experiments.crystallize_formulas --to-hippocampus  # 需 axiom_core_proprietary
+```
 
 ## 公式发现 Demo
 
@@ -98,6 +162,7 @@ streamlit run axiom_os/dashboard.py
 
 ```bash
 python -m axiom_os.validate_all
+# 单模块：--rar | --battery | --turbulence | --jhtdb-les-sgs | --crystallize | --dark-matter
 ```
 
 ## 项目结构
@@ -152,6 +217,8 @@ print(res.result, res.confidence, res.report)
 
 ## 主要创新
 
+- **湍流闭合**：TBNN (Pope 不变量) + FNO (3D 非局部) + JHTDB 真实数据
+- **公式结晶**：RAR McGaugh 符号提取、Hippocampus 知识存储
 - **可微公理势阱**：物理约束架构级引力场
 - **弹性守恒协议**：可协商网络共识
 - **光锥时间协调**：相对论因果结构

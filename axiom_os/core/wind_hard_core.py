@@ -1,7 +1,6 @@
 """
 共享的湍流 Hard Core 实现
-PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
-Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
 
 供 run_turbulence_full, main_turbulence_3d, main_turbulence_ageostrophic 使用
 """
@@ -9,7 +8,7 @@ Unauthorized copying, modification, or distribution of this algorithm is prohibi
 import numpy as np
 import torch
 
-from . import wrap_adaptive_hard_core
+from .adaptive_hard_core import wrap_adaptive_hard_core
 
 
 def make_wind_hard_core(u_mean: float, v_mean: float):

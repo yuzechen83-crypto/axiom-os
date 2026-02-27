@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-02-26T12:33:55.205815",
+  "config": {
+    "data_source": "RAR.mrt",
+    "n_total": 2693,
+    "n_deep_mond": 947,
+    "threshold": 0.1,
+    "a0_si": 1.199088337176552e-10
+  },
+  "metrics": {
+    "mae_log": 0.11574001675632456,
+    "rmse_log": 0.15157329084532536,
+    "residual_mean": 0.030542731576477265,
+    "residual_std": 0.14846415070827318,
+    "correlation": 0.6608863756725718
+  },
+  "verdict": "MARGINAL"
+}

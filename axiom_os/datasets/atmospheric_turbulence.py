@@ -152,6 +152,77 @@ def load_atmospheric_turbulence_3d(
     return coords, targets, meta
 
 
+def load_atmospheric_turbulence_3d_temporal(
+    lat_center: float = 39.9,
+    lon_center: float = 116.4,
+    n_lat: int = 3,
+    n_lon: int = 3,
+    delta_deg: float = 0.12,
+    forecast_days: int = 5,
+    use_synthetic_if_fail: bool = True,
+) -> Tuple[List[Tuple[np.ndarray, np.ndarray]], Dict]:
+    """
+    Load 3D wind for temporal forecasting. Returns time series per spatial point.
+    Each element: (coords_ts, targets_ts) where coords_ts (n_t, 4), targets_ts (n_t, 2).
+    Order: for each (lat, lon, z), full time series t=0..n_t-1.
+    """
+    coords, targets, meta = load_atmospheric_turbulence_3d(
+        lat_center=lat_center, lon_center=lon_center,
+        n_lat=n_lat, n_lon=n_lon, delta_deg=delta_deg,
+        forecast_days=forecast_days, use_synthetic_if_fail=use_synthetic_if_fail,
+    )
+    if meta.get("data_source") != "real":
+        # Synthetic: meshgrid(t,x,y,z) ij, ravel: z fastest. n = n_t * n_x * n_y * n_z
+        n = len(coords)
+        for n_t in [48, 24, 72, 96]:
+            if n % n_t == 0:
+                nxyz = n // n_t
+                n_cube = int(round(nxyz ** (1/3)))
+                if n_cube ** 3 == nxyz:
+                    n_x = n_y = n_z = n_cube
+                    break
+        else:
+            n_t, n_x, n_y, n_z = 24, 4, 4, 4
+        n_xyz = n_t * n_x * n_y * n_z
+        if n_xyz > n:
+            n_xyz = n
+        series_list = []
+        try:
+            c4 = coords[:n_xyz].reshape(n_t, n_x, n_y, n_z, 4)
+            t4 = targets[:n_xyz].reshape(n_t, n_x, n_y, n_z, 2)
+            for ix in range(n_x):
+                for iy in range(n_y):
+                    for iz in range(n_z):
+                        series_list.append((c4[:, ix, iy, iz, :].copy(), t4[:, ix, iy, iz, :].copy()))
+        except Exception:
+            pass
+        if series_list:
+            meta["n_t"] = n_t
+            return series_list, meta
+
+    # Real: order is (lat, lon) -> (iz) -> (t). Group by (lat, lon, iz).
+    lat_arr = coords[:, 1]  # x norm
+    lon_arr = coords[:, 2]
+    z_arr = coords[:, 3]
+    t_arr = coords[:, 0]
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for i in range(len(coords)):
+        key = (round(float(lat_arr[i]), 6), round(float(lon_arr[i]), 6), round(float(z_arr[i]), 6))
+        groups[key].append((coords[i], targets[i]))
+    series_list = []
+    for key, pts in groups.items():
+        pts_sorted = sorted(pts, key=lambda p: p[0][0])  # by t
+        if len(pts_sorted) < 10:
+            continue
+        c_ts = np.array([p[0] for p in pts_sorted], dtype=np.float32)
+        t_ts = np.array([p[1] for p in pts_sorted], dtype=np.float32)
+        series_list.append((c_ts, t_ts))
+    meta["n_t"] = len(series_list[0][0]) if series_list else 0
+    meta["n_series"] = len(series_list)
+    return series_list, meta
+
+
 def load_atmospheric_turbulence_3d_with_physics(
     lat_center: float = 39.9,
     lon_center: float = 116.4,

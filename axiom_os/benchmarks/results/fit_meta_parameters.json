@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-02-26T12:19:27.765988",
+  "config": {
+    "n_galaxies": 0,
+    "n_points": 2693,
+    "data_source": "SPARC RAR.mrt (McGaugh+2016 canonical)",
+    "log_mse_bootstrap": true
+  },
+  "fit": {
+    "g0": 4768.526219272901,
+    "alpha": 0.9516570364114271,
+    "a0_si": 1.545374101365063e-10,
+    "rmse": 3874.0947956933655,
+    "r2": 0.9199412927776323,
+    "r2_log": 0.9308054217203843,
+    "rmse_alpha1": 3875.1641790701983,
+    "alpha_prefers_1": true,
+    "n_points": 2693
+  },
+  "verdict": "CONSISTENT",
+  "bootstrap": {
+    "g0": {
+      "mean": 3700.0,
+      "std": 0.0,
+      "ci68_lo": 3700.0,
+      "ci68_hi": 3700.0,
+      "ci95_lo": 3700.0,
+      "ci95_hi": 3700.0
+    },
+    "a0_si": {
+      "mean": 1.1990883371765517e-10,
+      "std": 2.5849394142282115e-26,
+      "ci68_lo": 1.199088337176552e-10,
+      "ci68_hi": 1.199088337176552e-10,
+      "ci95_lo": 1.199088337176552e-10,
+      "ci95_hi": 1.199088337176552e-10
+    },
+    "n_bootstrap": 200,
+    "method": "log_mse"
+  },
+  "mcgaugh_in_1sigma": false,
+  "mcgaugh_range_overlap": true,
+  "log_mse_point_estimate": {
+    "g0": 3700.0,
+    "a0_si": 1.199088337176552e-10
+  }
+}

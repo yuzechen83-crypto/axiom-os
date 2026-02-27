@@ -8,6 +8,7 @@ from .registry import NeuronRegistry, get_registry
 from .mechanics import AcrobotResidualNeuron
 from .fluids import TurbulenceResidualNeuron
 from .control import ControlResidualNeuron
+from .temporal import TemporalPhysicsNeuron
 
 __all__ = [
     "get_registry",
@@ -16,4 +17,5 @@ __all__ = [
     "AcrobotResidualNeuron",
     "TurbulenceResidualNeuron",
     "ControlResidualNeuron",
+    "TemporalPhysicsNeuron",
 ]

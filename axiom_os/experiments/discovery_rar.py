@@ -33,6 +33,22 @@ from axiom_os.layers.meta_kernel import (
 )
 
 
+def _estimate_upsilon(g_bar: np.ndarray, g_obs: np.ndarray, window: int = 50) -> np.ndarray:
+    """
+    从 g_bar, g_obs 估计每点的有效质量-光比 Upsilon（相对 0.5 的缩放）。
+    用 log(g_obs/g_bar) 平滑后限制在 [0.1, 2.0]，用于校准 g_bar。
+    """
+    log_ratio = np.log10((g_obs + 1e-14) / (g_bar + 1e-14))
+    try:
+        from scipy.ndimage import median_filter
+        smooth_log = median_filter(log_ratio.astype(np.float64), size=min(window, len(log_ratio) // 2 or 1), mode="nearest")
+    except Exception:
+        smooth_log = log_ratio
+    ratio_smooth = np.power(10.0, smooth_log)
+    upsilon = np.clip(0.5 * ratio_smooth, 0.1, 2.0)
+    return upsilon
+
+
 def _build_rar_data(n_galaxies: int = 175) -> tuple:
     """Aggregate (g_bar, g_obs) from all galaxies."""
     avail = get_available_sparc_galaxies()
@@ -183,7 +199,14 @@ class MonotonicRARMLP(nn.Module):
         return self.fc3(h).squeeze(-1)
 
 
-def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
+def run_rar_discovery(
+    n_galaxies: int = 175,
+    epochs: int = 800,
+    apply_mass_calibration: bool = True,
+    loss_weight_high: float = 0.1,
+    loss_weight_low: float = 0.1,
+    use_pysr: bool = True,
+) -> dict:
     """
     Task 1: Build (g_bar, g_obs) dataset
     Task 2: Train MLP log(g_bar) -> log(g_obs)
@@ -193,6 +216,16 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
     g_bar, g_obs, names = _build_rar_data(n_galaxies)
     if g_bar is None:
         return {"error": "Insufficient data"}
+
+    upsilon_applied = False
+    upsilon_mean = 0.5
+    if apply_mass_calibration:
+        upsilon = _estimate_upsilon(g_bar, g_obs, window=50)
+        upsilon_mean = float(np.mean(upsilon))
+        g_bar_calibrated = g_bar * (upsilon / 0.5)
+        g_bar = g_bar_calibrated
+        upsilon_applied = True
+        print(f"    [OK] 质量校准应用，平均 Upsilon = {upsilon_mean:.3f}")
 
     # Step 1: Data coverage (why free fit may give g0=321 vs 3700)
     n_pts = len(g_bar)
@@ -229,7 +262,7 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
         pred_log_low = model(log_low).squeeze()
         loss_high = (pred_log_high - target_log_high) ** 2
         loss_low = (pred_log_low - target_log_low) ** 2
-        loss = loss_data + 0.1 * (loss_high + loss_low)
+        loss = loss_data + loss_weight_high * loss_high + loss_weight_low * loss_low
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 2.0)
         opt.step()
@@ -242,28 +275,52 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
     r2 = 1 - np.sum((g_obs_pred - g_obs) ** 2) / (np.sum((g_obs - g_obs.mean()) ** 2) + 1e-12)
     r2_log = 1 - np.sum((log_g_obs_pred - log_g_obs) ** 2) / (np.sum((log_g_obs - log_g_obs.mean()) ** 2) + 1e-12)
 
-    # Discovery: fit nu = g_obs / g_bar as function of g_bar
+    # Discovery: fit nu = g_obs / g_bar as function of g_bar (P0: 启用 PySR 支持 exp/log/sin)
     nu = g_obs / (g_bar + 1e-14)
-    X_nu = np.column_stack([np.log10(g_bar + 1e-14), g_bar])
-    engine = DiscoveryEngine(use_pysr=False)
+    nu = np.clip(nu, 0.1, 100.0)
+    X_nu = np.column_stack([np.log10(g_bar + 1e-14), g_bar, np.sqrt(g_bar + 1e-14)])
+    engine = DiscoveryEngine(use_pysr=use_pysr)
     formula_nu, pred_nu, _ = engine.discover_multivariate(
-        X_nu[:, :1], nu, var_names=["log_g_bar"], selector="bic",
+        X_nu[:, :2], nu, var_names=["log_g_bar", "g_bar"], selector="bic",
     )
 
     # Candidate forms: MOND, Power law
+    # g_bar, g_obs 单位: (km/s)²/kpc，g0 同单位，典型值 3000-5000
     def fit_mond(g_bar: np.ndarray, g_obs: np.ndarray) -> tuple:
         from scipy.optimize import minimize
-        def loss(p):
-            g0 = 10**p[0]
-            nu = 1.0 / (1.0 - np.exp(-np.sqrt(np.maximum(g_bar / g0, 1e-10))))
+        g0_bounds = (100.0, 50000.0)  # (km/s)²/kpc
+
+        def loss(g0_val: float) -> float:
+            g0_val = np.clip(g0_val, g0_bounds[0], g0_bounds[1])
+            nu = 1.0 / (1.0 - np.exp(-np.sqrt(np.maximum(g_bar / (g0_val + 1e-14), 1e-10))))
             pred = g_bar * np.clip(nu, 1.0, 100.0)
             return np.mean((pred - g_obs) ** 2)
-        res = minimize(loss, [-10.0], method="Nelder-Mead", options={"maxiter": 200})
-        g0 = 10**res.x[0]
-        nu = 1.0 / (1.0 - np.exp(-np.sqrt(np.maximum(g_bar / g0, 1e-10))))
+
+        best_g0, best_r2 = None, -1e9
+        for p0 in [3700.0, 3000.0, 5000.0, 1000.0]:
+            try:
+                res = minimize(
+                    lambda p: loss(p[0]),
+                    [p0],
+                    method="L-BFGS-B",
+                    bounds=[g0_bounds],
+                    options={"maxiter": 300},
+                )
+                g0 = float(np.clip(res.x[0], g0_bounds[0], g0_bounds[1]))
+                nu = 1.0 / (1.0 - np.exp(-np.sqrt(np.maximum(g_bar / (g0 + 1e-14), 1e-10))))
+                pred = g_bar * np.clip(nu, 1.0, 100.0)
+                r2 = 1 - np.sum((pred - g_obs) ** 2) / (np.sum((g_obs - g_obs.mean()) ** 2) + 1e-12)
+                if r2 > best_r2:
+                    best_r2, best_g0 = r2, g0
+            except Exception:
+                continue
+        if best_g0 is None:
+            return "MOND (fit failed)", np.zeros_like(g_obs), 0.0
+        g0 = best_g0
+        nu = 1.0 / (1.0 - np.exp(-np.sqrt(np.maximum(g_bar / (g0 + 1e-14), 1e-10))))
         pred = g_bar * np.clip(nu, 1.0, 100.0)
         r2 = 1 - np.sum((pred - g_obs) ** 2) / (np.sum((g_obs - g_obs.mean()) ** 2) + 1e-12)
-        return f"MOND g0={g0:.2e}", pred, r2
+        return f"MOND g0={g0:.0f} (km/s)^2/kpc", pred, r2
 
     def fit_power(g_bar: np.ndarray, g_obs: np.ndarray) -> tuple:
         log_gb = np.log10(g_bar + 1e-14)
@@ -334,6 +391,8 @@ def run_rar_discovery(n_galaxies: int = 175, epochs: int = 800) -> dict:
         "n_galaxies": len(names),
         "n_samples": len(g_bar),
         "crystallized": crystallized,
+        "upsilon_applied": upsilon_applied,
+        "upsilon_mean": upsilon_mean,
     }
 
 

@@ -1,5 +1,7 @@
 """
 元轴丛场 (Meta Axis Bundle Field)
+Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+
 海马体核心结构：基空间 + 纤维 + 联络 + 截面 + 连锁反应
 
 - 基空间：Partition × Domain × Regime

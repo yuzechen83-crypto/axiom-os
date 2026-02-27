@@ -1,7 +1,6 @@
 """
 SPNN-Evo 严肃教练
-PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
-Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
 
 对 (x, y_pred) 打分，用于方案 A：L_total = L_data + λ_coach * (1 - coach_score)
 

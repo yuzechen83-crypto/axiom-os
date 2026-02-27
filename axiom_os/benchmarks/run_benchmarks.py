@@ -23,6 +23,8 @@ ROOT = Path(__file__).resolve().parents[2]
 BENCH_DIR = ROOT / "axiom_os" / "benchmarks" / "results"
 sys.path.insert(0, str(ROOT))
 
+from .seed_utils import set_global_seed, DEFAULT_BENCHMARK_SEED
+
 RESULTS: List[Dict[str, Any]] = []
 
 
@@ -457,9 +459,10 @@ def bench_turbulence(epochs: int = 200, batch_size: int = None) -> float:
 
     np.random.seed(42)
     torch.manual_seed(42)
-    coords, targets, _ = load_atmospheric_turbulence_3d(
+    coords, targets, meta = load_atmospheric_turbulence_3d(
         n_lat=3, n_lon=3, delta_deg=0.15, forecast_days=3, use_synthetic_if_fail=True
     )
+    data_src = meta.get("data_source", "unknown")
     n = len(coords)
     split = int(0.8 * n)
     X_train = torch.from_numpy(coords[:split]).float()
@@ -477,8 +480,8 @@ def bench_turbulence(epochs: int = 200, batch_size: int = None) -> float:
         loss.backward()
         opt.step()
     elapsed = time.perf_counter() - t0
-    _record("turbulence_training", "elapsed_s", elapsed, "s", {"epochs": epochs})
-    _record("turbulence_training", "epoch_time_ms", elapsed / epochs * 1000, "ms", {})
+    _record("turbulence_training", "elapsed_s", elapsed, "s", {"epochs": epochs, "data_source": data_src})
+    _record("turbulence_training", "epoch_time_ms", elapsed / epochs * 1000, "ms", {"data_source": data_src})
     return elapsed
 
 
@@ -671,7 +674,10 @@ def main():
     parser.add_argument("--compare-pysr", action="store_true", help="与 PySR/SINDy 对比（需安装）")
     parser.add_argument("--hard", action="store_true", help="高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz）")
     parser.add_argument("--no-fail-on-alerts", action="store_true", help="阈值告警时不 exit(1)，用于 CI")
+    parser.add_argument("--seed", type=int, default=DEFAULT_BENCHMARK_SEED, help="随机种子（可复现性）")
     args = parser.parse_args()
+
+    set_global_seed(args.seed)
 
     cfg = CONFIG_MAP[args.config]
     use_config = not (args.unit or args.integration or args.e2e or args.memory)
@@ -680,7 +686,7 @@ def main():
     run_hard = args.hard
 
     print("=" * 60)
-    print(f"Axiom-OS 性能基准测试 [config={cfg.name}]")
+    print(f"Axiom-OS 性能基准测试 [config={cfg.name}, seed={args.seed}]")
     print("=" * 60)
 
     if use_config or args.unit:
@@ -741,7 +747,7 @@ def main():
 
     # Phase 4.1: 按日期保存 + 趋势图
     BENCH_DIR.mkdir(parents=True, exist_ok=True)
-    dated_path = save_dated_json(RESULTS, BENCH_DIR)
+    dated_path = save_dated_json(RESULTS, BENCH_DIR, seed=args.seed)
     print(f"已保存 dated: {dated_path}")
 
     if args.trend or args.report:
@@ -757,14 +763,14 @@ def main():
 
     # Phase 4.4: 报告生成
     if args.report:
-        md = generate_markdown_report(RESULTS, alerts, cfg.name)
+        md = generate_markdown_report(RESULTS, alerts, cfg.name, seed=args.seed)
         md_path = BENCH_DIR / "benchmark_report.md"
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(md)
         print(f"已保存 Markdown: {md_path}")
 
         cmp_path = BENCH_DIR / "benchmark_comparison.png"
-        html = generate_html_report(RESULTS, alerts, cfg.name, comparison_chart_path=cmp_path)
+        html = generate_html_report(RESULTS, alerts, cfg.name, comparison_chart_path=cmp_path, seed=args.seed)
         html_path = BENCH_DIR / "benchmark_report.html"
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)

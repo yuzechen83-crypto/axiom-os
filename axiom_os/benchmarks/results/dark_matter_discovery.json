@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-02-25T18:26:09.091701",
+  "config": {
+    "n_galaxies": 25,
+    "use_pysr": true
+  },
+  "results": [
+    {
+      "ok": true,
+      "source": "rar",
+      "r2_log": 0.8514822082942461,
+      "r2_linear": 0.5264532319681827,
+      "n_samples": 685,
+      "n_galaxies": 25,
+      "formula_nu": "-7.611*log_g_bar + -4.495e-05*g_bar + 1.071*log_g_bar^2 + 14.53",
+      "form_mond": "MOND g0=144 (km/s)^2/kpc",
+      "r2_mond": -1.8610430982667108,
+      "g_dagger": 645.6198100058118
+    },
+    {
+      "ok": true,
+      "source": "theory_validator",
+      "formula": "474.1*r + -0.148*V_bary_sq + -1.541*r^2 + 1.146e-06*V_bary_sq^2 + 0.01754*r*V_bary_sq + 926.5",
+      "formula_direct": "474.1*r + -0.148*V_bary_sq + -1.541*r^2 + 1.146e-06*V_bary_sq^2 + 0.01754*r*V_bary_sq + 926.5",
+      "formula_theory": "C*V_bary_sq/r^1.0",
+      "r2_direct": 0.5801977392360641,
+      "r2_theory": -0.40961170196533203,
+      "theory_match_score": 0.4,
+      "theory_match_details": "V_bary_sq=True, r=True, rho_form=False, rho_R2=0.000",
+      "n_samples": 415,
+      "data_source": "REAL"
+    },
+    {
+      "ok": true,
+      "source": "inverse_projection",
+      "formula": "0.06808*Sigma_baryon + -44.55*r + 0.644*r^2 + -0.05165*Sigma_baryon*r + 580.6",
+      "formula_theory": "C*Sigma_baryon/r^2",
+      "r2_fit": 0.07048308264676895,
+      "r2_theory": 0.06309096006336279,
+      "n_samples": 685,
+      "n_galaxies": 25
+    }
+  ]
+}

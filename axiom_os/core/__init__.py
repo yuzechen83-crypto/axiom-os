@@ -44,6 +44,13 @@ from .alpha_scheduler import (
     compute_alpha_hybrid,
 )
 from .turbulence_scale import TurbulencePhysicalScale, TurbulenceScales
+from .turbulence_invariants import (
+    grad_u_from_velocity,
+    decompose_grad_u,
+    compute_invariants,
+    compute_tensor_basis,
+    extract_invariants_and_basis,
+)
 from .bundle_field import MetaAxisBundleField
 from .partition import (
     Partition,
@@ -137,6 +144,11 @@ __all__ = [
     "learn_partition",
     "TurbulencePhysicalScale",
     "TurbulenceScales",
+    "grad_u_from_velocity",
+    "decompose_grad_u",
+    "compute_invariants",
+    "compute_tensor_basis",
+    "extract_invariants_and_basis",
     "integrate_hard_switch",
     "integrate_soft_gate",
     "infer_partition_id",

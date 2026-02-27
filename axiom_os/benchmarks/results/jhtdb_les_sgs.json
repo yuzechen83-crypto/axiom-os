@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-02-26T14:35:38.834062",
+  "meta": {
+    "data_source": "JHTDB",
+    "dataset": "isotropic8192",
+    "shape": [
+      16,
+      16,
+      16
+    ],
+    "n_points": 4096,
+    "timepoint": 1,
+    "coarse_shape": [
+      8,
+      8,
+      8,
+      3
+    ],
+    "coarse_ratio": 2
+  },
+  "u_mean": 4.144809343393037,
+  "tau_mean_norm": 0.001414039841657642,
+  "r2_smagorinsky": -0.023231392031931142,
+  "r2_tbnn_train": 0.2966806888580322,
+  "r2_tbnn_test": 0.15297722816467285,
+  "r2_tbnn_full": 0.2200017827630938,
+  "r2_fno_train": 0.2618975043296814,
+  "r2_fno_test": 0.2549992799758911,
+  "r2_pinn_lstm": 0.8463374972343445,
+  "verdict": "TBNN > Smagorinsky",
+  "data_source": "JHTDB"
+}

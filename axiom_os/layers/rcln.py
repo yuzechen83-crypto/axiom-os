@@ -1,7 +1,6 @@
 """
 RCLN - Residual Coupler Linking Neuron
-PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
-Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
 
 The Hybrid Engine: Analytical physics (Hard Core) + Neural approximation (Soft Shell).
 y_total = y_hard + λ·y_soft

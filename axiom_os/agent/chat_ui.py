@@ -56,6 +56,13 @@ def save_chat_history(messages):
 # 模式选择：Chat 或 MLL
 mode = st.sidebar.radio("模式", ["Chat (Text-to-Physics)", "MLL (多领域学习)"], index=0)
 
+# Chat 引擎：本地意图 或 Gemini 扩展（大模型收集数据/扩展优化 Axiom）
+use_gemini = st.sidebar.checkbox(
+    "使用 Gemini 扩展",
+    value=False,
+    help="接入 Gemini，可运行基准、RAR、Discovery 等工具并扩展/优化 Axiom。需设置 GEMINI_API_KEY。",
+)
+
 if "messages" not in st.session_state:
     st.session_state.messages = load_chat_history()
 
@@ -108,55 +115,66 @@ if mode == "MLL (多领域学习)":
                 st.error(f"MLL 异常: {e}")
     st.stop()
 
-if prompt := st.chat_input("输入物理问题，如：双摆带摩擦平衡..."):
+if prompt := st.chat_input("输入物理问题，如：跑一下 RAR、跑基准、双摆平衡..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("生成中..."):
+        with st.spinner("理解意图并执行..." if not use_gemini else "Gemini 扩展运行中..."):
             try:
                 import os
-                from axiom_os.agent.coder import AxiomCoder
-                from axiom_os.agent.runner import AxiomRunner
 
-                api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
-                if not api_key:
-                    try:
-                        from run_agent import _mock_generate
-                    except ImportError:
-                        def _mock_generate(_):
-                            return {
-                                "physics.py": "# 无 API Key，使用模板",
-                                "config.yaml": "state_dim: 2",
-                                "objective.py": "# mock",
-                            }
-                    artifacts = _mock_generate(prompt)
-                else:
-                    coder = AxiomCoder(api_key=api_key, provider="openai")
-                    artifacts = coder.generate(prompt)
-
-                output_dir = ROOT / "agent_output"
-                output_dir.mkdir(parents=True, exist_ok=True)
-                for name, content in artifacts.items():
-                    (output_dir / name).write_text(content, encoding="utf-8")
-
-                runner = AxiomRunner(output_dir=output_dir)
-                stdout, result, err = runner.run(
-                    artifacts["physics.py"],
-                    artifacts["config.yaml"],
-                    artifacts["objective.py"],
-                    max_steps=50,
-                )
-
-                if err:
-                    reply = f"❌ 错误: {err}"
-                else:
-                    discovered = result.get("discovered", [])
-                    if discovered:
-                        reply = f"✅ 仿真完成。发现公式: {discovered[0]}"
+                # Gemini 扩展模式：大模型调用工具收集数据/扩展优化
+                if use_gemini:
+                    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+                    if not gemini_key:
+                        reply = "❌ 请设置环境变量 GEMINI_API_KEY 或 GOOGLE_API_KEY 后使用 Gemini 扩展。"
                     else:
-                        reply = "✅ 仿真完成，未发现新物理公式。"
+                        from axiom_os.agent.gemini_agent import run_agent_loop
+                        reply = run_agent_loop(prompt, api_key=gemini_key, max_tool_rounds=5)
+                    if not reply:
+                        reply = "（无回复）"
+                else:
+                    from axiom_os.agent.llm_layer import AxiomLLMLayer, INTENT_MAIN_SIM
+                    from axiom_os.agent.dispatcher import run_intent
+
+                    api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+                    llm = AxiomLLMLayer(api_key=api_key, provider="openai")
+                    plan = llm.plan(prompt)
+                    intent, params = plan["intent"], plan.get("params") or {}
+
+                    # 双摆/控制仿真：走原有 Coder + Runner 流程
+                    if intent == INTENT_MAIN_SIM:
+                        from axiom_os.agent.coder import AxiomCoder
+                        from axiom_os.agent.runner import AxiomRunner
+                        if not api_key:
+                            try:
+                                from run_agent import _mock_generate
+                            except ImportError:
+                                def _mock_generate(_):
+                                    return {"physics.py": "# 无 API Key", "config.yaml": "state_dim: 2", "objective.py": "# mock"}
+                            artifacts = _mock_generate(prompt)
+                        else:
+                            coder = AxiomCoder(api_key=api_key, provider="openai")
+                            artifacts = coder.generate(prompt)
+                        output_dir = ROOT / "agent_output"
+                        output_dir.mkdir(parents=True, exist_ok=True)
+                        for name, content in artifacts.items():
+                            (output_dir / name).write_text(content, encoding="utf-8")
+                        runner = AxiomRunner(output_dir=output_dir)
+                        stdout, result, err = runner.run(
+                            artifacts["physics.py"], artifacts["config.yaml"], artifacts["objective.py"], max_steps=50,
+                        )
+                        reply = llm.format_reply(intent, result if not err else {}, error=err)
+                    else:
+                        # 其他意图：调度器直接跑 Axiom 模块
+                        out = run_intent(intent, params)
+                        result = out.get("result") or {}
+                        err = out.get("error")
+                        reply = llm.format_reply(intent, result, error=err)
+                        if out.get("elapsed"):
+                            reply += f" （耗时 {out['elapsed']:.1f}s）"
             except Exception as e:
                 reply = f"❌ 异常: {e}"
 

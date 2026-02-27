@@ -15,6 +15,9 @@ from urllib.error import URLError, HTTPError
 
 SPARC_ZIP_URL = "http://astroweb.cwru.edu/SPARC/Rotmod_LTG.zip"
 SPARC_ZENODO_URL = "https://zenodo.org/records/16284118/files/Rotmod_LTG.zip?download=1"
+SPARC_RAR_URL = "https://astroweb.cwru.edu/SPARC/RAR.mrt"
+# KM_S_SQ_PER_KPC_TO_MS2: (km/s)^2/kpc -> m/s^2
+KM_S_SQ_PER_KPC_TO_MS2 = 1e6 / 3.08567758128e19
 # Local path override: set SPARC_ZIP_PATH env, or use axiom_os/data/Rotmod_LTG.zip if exists
 _SPARC_CACHE: Optional[bytes] = None
 _DEFAULT_LOCAL = Path(__file__).resolve().parent.parent / "data" / "Rotmod_LTG.zip"
@@ -329,7 +332,7 @@ def get_available_sparc_galaxies() -> List[str]:
                         out.append(key)
     except Exception:
         pass
-    return sorted(out, key=lambda x: int(x.split("_")[1]) if "_" in x else 0)[:50]
+    return sorted(out, key=lambda x: int(x.split("_")[1]) if "_" in x else 0)
 
 
 def load_sparc_galaxy(
@@ -414,6 +417,110 @@ def compute_accelerations(d: Dict[str, np.ndarray]) -> Tuple[np.ndarray, np.ndar
         (g_bar > 1e-12) & (g_obs > 1e-12)
     )
     return g_bar[mask], g_obs[mask], mask
+
+
+_RAR_MRT_LOCAL = Path(__file__).resolve().parent.parent / "data" / "RAR.mrt"
+
+
+def load_sparc_rar_mrt() -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load canonical RAR data from SPARC RAR.mrt (McGaugh+2016, Lelli+2017).
+    Tries axiom_os/data/RAR.mrt first, then fetches from URL and caches.
+    Format: log10(g_bar), e_gbar, log10(g_obs), e_gobs in m/s^2.
+    Returns g_bar, g_obs in (km/s)^2/kpc for consistency with Rotmod pipeline.
+    """
+    raw = None
+    if _RAR_MRT_LOCAL.exists():
+        try:
+            raw = _RAR_MRT_LOCAL.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    if raw is None or len(raw) < 100:
+        try:
+            req = Request(SPARC_RAR_URL, headers={"User-Agent": "AxiomOS/1.0"})
+            with urlopen(req, timeout=30) as r:
+                raw = r.read().decode("utf-8", errors="replace")
+            if raw and len(raw) > 100:
+                _RAR_MRT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
+                _RAR_MRT_LOCAL.write_text(raw, encoding="utf-8")
+        except Exception:
+            return np.array([]), np.array([])
+    lines = [l.strip() for l in raw.splitlines() if l.strip()]
+    g_bar_list, g_obs_list = [], []
+    for line in lines:
+        if line.startswith("#") or "Bytes" in line or "Format" in line or "Label" in line or "----" in line:
+            continue
+        parts = line.split()
+        if len(parts) >= 4:
+            try:
+                log_gbar = float(parts[0])
+                log_gobs = float(parts[2])
+                if np.isfinite(log_gbar) and np.isfinite(log_gobs):
+                    g_bar_si = 10.0 ** log_gbar
+                    g_obs_si = 10.0 ** log_gobs
+                    if g_bar_si > 1e-20 and g_obs_si > 1e-20:
+                        g_bar_list.append(g_bar_si / KM_S_SQ_PER_KPC_TO_MS2)
+                        g_obs_list.append(g_obs_si / KM_S_SQ_PER_KPC_TO_MS2)
+            except (ValueError, IndexError):
+                continue
+    if not g_bar_list:
+        return np.array([]), np.array([])
+    return np.array(g_bar_list), np.array(g_obs_list)
+
+
+def load_sparc_rar_real_only_per_galaxy(
+    n_galaxies: int = 175,
+    galaxy_list: Optional[List[str]] = None,
+) -> Tuple[List[Tuple[np.ndarray, np.ndarray]], List[str]]:
+    """Load (g_bar, g_obs) per galaxy from Rotmod. For per-galaxy fit then median (McGaugh-style)."""
+    if galaxy_list is None:
+        avail = get_available_sparc_galaxies()
+        names = avail[:n_galaxies] if avail else SPARC_GALAXIES[:n_galaxies]
+    else:
+        names = galaxy_list
+    per_gal = []
+    used_names = []
+    for name in names:
+        d = _load_real_sparc(name)
+        if d is None:
+            continue
+        g_bar, g_obs, mask = compute_accelerations(d)
+        if len(g_bar) >= 5:  # need enough points per galaxy
+            per_gal.append((g_bar, g_obs))
+            used_names.append(name)
+    return per_gal, used_names
+
+
+def load_sparc_rar_real_only(
+    n_galaxies: int = 175,
+    galaxy_list: Optional[List[str]] = None,
+) -> Tuple[np.ndarray, np.ndarray, List[str]]:
+    """
+    Load (g_bar, g_obs) from REAL SPARC data only. No mock fallback.
+    Returns empty arrays if real data unavailable or insufficient.
+    """
+    if galaxy_list is None:
+        avail = get_available_sparc_galaxies()
+        names = avail[:n_galaxies] if avail else SPARC_GALAXIES[:n_galaxies]
+    else:
+        names = galaxy_list
+    all_g_bar, all_g_obs, used_names = [], [], []
+    for name in names:
+        d = _load_real_sparc(name)
+        if d is None:
+            continue
+        g_bar, g_obs, mask = compute_accelerations(d)
+        if len(g_bar) >= 3:
+            all_g_bar.append(g_bar)
+            all_g_obs.append(g_obs)
+            used_names.append(name)
+    if not all_g_bar:
+        return np.array([]), np.array([]), []
+    return (
+        np.concatenate(all_g_bar),
+        np.concatenate(all_g_obs),
+        used_names,
+    )
 
 
 def load_sparc_rar(

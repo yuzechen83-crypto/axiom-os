@@ -1,0 +1,131 @@
+{
+  "timestamp": "2026-02-25T18:45:04.082348",
+  "config": {
+    "n_galaxies": 25,
+    "use_pysr": true
+  },
+  "results": {
+    "rar": {
+      "ok": true,
+      "source": "rar",
+      "r2_log": 0.8514822082942461,
+      "r2_linear": 0.5264532319681827,
+      "n_samples": 685,
+      "n_galaxies": 25,
+      "formula_nu": "-7.611*log_g_bar + -4.495e-05*g_bar + 1.071*log_g_bar^2 + 14.53",
+      "form_mond": "MOND g0=144 (km/s)^2/kpc",
+      "r2_mond": -1.8610430982667108,
+      "g_dagger": 645.6198100058118
+    },
+    "theory_validator": {
+      "ok": true,
+      "source": "theory_validator",
+      "formula": "474.1*r + -0.148*V_bary_sq + -1.541*r^2 + 1.146e-06*V_bary_sq^2 + 0.01754*r*V_bary_sq + 926.5",
+      "formula_direct": "474.1*r + -0.148*V_bary_sq + -1.541*r^2 + 1.146e-06*V_bary_sq^2 + 0.01754*r*V_bary_sq + 926.5",
+      "formula_theory": "C*V_bary_sq/r^1.0",
+      "r2_direct": 0.5801977392360641,
+      "r2_theory": -0.40961170196533203,
+      "theory_match_score": 0.4,
+      "theory_match_details": "V_bary_sq=True, r=True, rho_form=False, rho_R2=0.000",
+      "theory_match": {
+        "score": 0.4,
+        "has_V_bary_sq": true,
+        "has_r": true,
+        "has_rho_form": false,
+        "rho_form_r2": 0.0,
+        "details": "V_bary_sq=True, r=True, rho_form=False, rho_R2=0.000"
+      },
+      "n_samples": 415,
+      "data_source": "REAL"
+    },
+    "inverse_projection": {
+      "ok": true,
+      "source": "inverse_projection",
+      "formula": "0.06808*Sigma_baryon + -44.55*r + 0.644*r^2 + -0.05165*Sigma_baryon*r + 580.6",
+      "formula_theory": "C*Sigma_baryon/r^2",
+      "r2_fit": 0.07048308264676895,
+      "r2_theory": 0.06309096006336279,
+      "n_samples": 685,
+      "n_galaxies": 25
+    }
+  },
+  "similarities": {
+    "rar": {
+      "formula_discovered": "-7.611*log_g_bar + -4.495e-05*g_bar + 1.071*log_g_bar^2 + 14.53",
+      "formula_ground_truth": "g_obs = g_bar * nu(g_bar/g†), nu 为 g_bar 的普适函数",
+      "structure_score": 1.0,
+      "param_score": 1.0,
+      "overall_similarity": 1.0,
+      "details": {
+        "has_g_bar": true,
+        "has_log_g_bar": true,
+        "g_dagger": 645.6198100058118,
+        "g_dagger_valid": true
+      }
+    },
+    "theory_validator": {
+      "formula_discovered": "474.1*r + -0.148*V_bary_sq + -1.541*r^2 + 1.146e-06*V_bary_sq^2 + 0.01754*r*V_bary_sq + 926.5",
+      "formula_ground_truth": "V_def^2 = C * V_bary_sq / r^alpha (rho 形式)",
+      "structure_score": 0.66,
+      "theory_match_score": 0.4,
+      "overall_similarity": 0.504,
+      "details": {
+        "has_v_bary_sq": true,
+        "has_r": true,
+        "has_rho_form": false
+      }
+    },
+    "inverse_projection": {
+      "formula_discovered": "0.06808*Sigma_baryon + -44.55*r + 0.644*r^2 + -0.05165*Sigma_baryon*r + 580.6",
+      "formula_ground_truth": "Sigma_halo = C * Sigma_baryon / r^beta",
+      "formula_theory_fit": "C*Sigma_baryon/r^2",
+      "structure_score": 0.7,
+      "theory_fit_score": 0.06309096006336279,
+      "overall_similarity": 0.38154548003168137,
+      "details": {
+        "has_sigma_baryon": true,
+        "has_r": true,
+        "has_ratio_form": false
+      }
+    }
+  },
+  "avg_similarity": 0.6285151600105604,
+  "ground_truth": {
+    "rar": {
+      "form": "g_obs = g_bar * nu(g_bar/g†), nu 为 g_bar 的普适函数",
+      "structure_hints": [
+        "g_bar",
+        "log_g_bar"
+      ],
+      "param_g_dagger_range": [
+        300.0,
+        5000.0
+      ]
+    },
+    "theory_validator": {
+      "form": "V_def^2 = C * V_bary_sq / r^alpha (rho 形式)",
+      "structure_hints": [
+        "v_bary",
+        "r",
+        "/",
+        "r^"
+      ],
+      "param_alpha_range": [
+        1.0,
+        3.0
+      ]
+    },
+    "inverse_projection": {
+      "form": "Sigma_halo = C * Sigma_baryon / r^beta",
+      "structure_hints": [
+        "sigma_baryon",
+        "r",
+        "/"
+      ],
+      "param_beta_range": [
+        0.0,
+        3.0
+      ]
+    }
+  }
+}

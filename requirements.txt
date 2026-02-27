@@ -1,6 +1,13 @@
 # SPNN-Opt-Rev5 (Axiom-OS) Dependencies
 torch>=2.0.0
+# JHTDB real turbulence (optional, for jhtdb_les_sgs)
+givernylocal>=3.2.0
+astroquery>=0.4.6
+astropy>=5.0.0
 numpy>=1.24.0
 scipy>=1.10.0
 scikit-learn>=1.0.0
+matplotlib>=3.7.0
 typing-extensions>=4.5.0
+# Agent / Gemini 扩展（可选：Chat 使用 Gemini 时需安装）
+google-generativeai>=0.8.0

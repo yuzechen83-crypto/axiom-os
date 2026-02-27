@@ -11,6 +11,7 @@ from .neurons import (
     AcrobotResidualNeuron,
     TurbulenceResidualNeuron,
     ControlResidualNeuron,
+    TemporalPhysicsNeuron,
 )
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "AcrobotResidualNeuron",
     "TurbulenceResidualNeuron",
     "ControlResidualNeuron",
+    "TemporalPhysicsNeuron",
 ]

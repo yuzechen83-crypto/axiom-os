@@ -1,7 +1,6 @@
 """
 Hippocampus - Knowledge Registry
-PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
-Unauthorized copying, modification, or distribution of this algorithm is prohibited.
+Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
 
 Stores crystallized physical laws found by the system.
 
