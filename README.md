@@ -3,6 +3,7 @@
 物理不变尺度锚定 + 规范耦合神经元的集成框架，实现「物理公理兜底 + 未知边界探索」双重目标。
 
 > **核心技术声明**：详见 [PROPRIETARY_COMPONENTS.md](PROPRIETARY_COMPONENTS.md)。全部实现已开源，可直接调取。
+> 更新日志见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 框架定义
 
