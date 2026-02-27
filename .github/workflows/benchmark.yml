@@ -72,9 +72,9 @@ jobs:
           if [ -f axiom_os/benchmarks/results/benchmark_report.html ]; then
             cp axiom_os/benchmarks/results/benchmark_report.html "$SITE/report.html"
           fi
-          if [ -f axiom_os/benchmarks/results/benchmark_comparison.png ]; then
-            cp axiom_os/benchmarks/results/benchmark_comparison.png "$SITE/"
-          fi
+          for f in axiom_os/benchmarks/results/benchmark_comparison.png axiom_os/benchmarks/results/jhtdb_les_sgs_comparison.png axiom_os/benchmarks/results/jhtdb_les_sgs_3d.png; do
+            [ -f "$f" ] && cp "$f" "$SITE/"
+          done
           # 最新 JSON（优先 dated，否则 ci）
           LATEST_JSON=$(ls -t axiom_os/benchmarks/results/benchmark_*.json 2>/dev/null | head -1)
           if [ -n "$LATEST_JSON" ]; then
@@ -82,17 +82,35 @@ jobs:
           elif [ -f benchmark_ci.json ]; then
             cp benchmark_ci.json "$SITE/latest.json"
           fi
+          # 复制 JHTDB/crystallized 结果
+          [ -f axiom_os/benchmarks/results/jhtdb_les_sgs.json ] && cp axiom_os/benchmarks/results/jhtdb_les_sgs.json "$SITE/"
+          [ -f axiom_os/benchmarks/results/crystallized_formulas.json ] && cp axiom_os/benchmarks/results/crystallized_formulas.json "$SITE/"
           # 首页
           cat > "$SITE/index.html" << 'EOF'
           <!DOCTYPE html>
           <html lang="zh">
           <head><meta charset="utf-8"><title>Axiom-OS Benchmark</title>
-          <style>body{font-family:system-ui,sans-serif;margin:2em;max-width:720px}
-          a{color:#1565c0}h1{color:#1a237e}</style></head>
+          <style>body{font-family:system-ui,sans-serif;margin:2em;max-width:800px}
+          a{color:#1565c0}h1{color:#1a237e}h2{color:#283593;margin-top:1.5em}
+          ul{line-height:1.6}</style></head>
           <body>
           <h1>Axiom-OS 性能基准</h1>
-          <p><a href="report.html">最新报告 (HTML)</a></p>
-          <p><a href="latest.json">最新结果 (JSON)</a></p>
+          <h2>基准报告</h2>
+          <ul>
+            <li><a href="report.html">最新报告 (HTML)</a></li>
+            <li><a href="latest.json">最新结果 (JSON)</a></li>
+            <li><a href="benchmark_comparison.png">Discovery vs Baseline 对比图</a></li>
+          </ul>
+          <h2>湍流建模 (JHTDB LES-SGS)</h2>
+          <ul>
+            <li><a href="jhtdb_les_sgs.json">JHTDB 结果 (JSON)</a></li>
+            <li><a href="jhtdb_les_sgs_comparison.png">Smagorinsky vs TBNN vs FNO 对比</a></li>
+            <li><a href="jhtdb_les_sgs_3d.png">3D 可视化</a></li>
+          </ul>
+          <h2>公式结晶</h2>
+          <ul>
+            <li><a href="crystallized_formulas.json">RAR 结晶公式 (JSON)</a></li>
+          </ul>
           <p><small>由 CI 在 push 到 main 时自动生成</small></p>
           </body></html>
           EOF
