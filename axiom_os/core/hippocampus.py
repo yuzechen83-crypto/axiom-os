@@ -139,6 +139,53 @@ class Hippocampus:
         idx = np.argsort(scores)[::-1][:top_k]
         return [scores[i] for i in idx], [self._memory[i][1] for i in idx]
 
+
+    def save(self, filepath: str) -> None:
+        """Save hippocampus memory to file."""
+        import json
+        
+        data = {
+            'dim': self.dim,
+            'capacity': self.capacity,
+            'memory': [
+                {
+                    'key': key.tolist() if hasattr(key, 'tolist') else list(key),
+                    'value': value.tolist() if hasattr(value, 'tolist') else list(value) if hasattr(value, '__iter__') else value,
+                    'confidence': conf,
+                }
+                for key, value, conf in self._memory
+            ],
+            'knowledge_base': self.knowledge_base,
+        }
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        print(f'Hippocampus saved to {filepath}')
+
+    def load(self, filepath: str) -> None:
+        """Load hippocampus memory from file."""
+        import json
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        self.dim = data.get('dim', 32)
+        self.capacity = data.get('capacity', 5000)
+        
+        self._memory = [
+            (
+                np.array(m['key']),
+                np.array(m['value']) if isinstance(m['value'], list) else m['value'],
+                m['confidence'],
+            )
+            for m in data.get('memory', [])
+        ]
+        
+        self.knowledge_base = data.get('knowledge_base', {})
+        
+        print(f'Hippocampus loaded from {filepath}')
+
     def _get_embedder(self) -> Optional[Any]:
         """Lazy load sentence-transformer for semantic RAG."""
         if not self.use_semantic_rag:
