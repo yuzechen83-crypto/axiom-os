@@ -226,7 +226,7 @@ class SpectralSoftShell(nn.Module):
         self.spectral = SpectralConv1d(input_dim, n_modes=self.n_modes)
         self.proj = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.SiLU(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, output_dim),
         )
 
@@ -313,9 +313,9 @@ class MLPSoftShell(nn.Module):
         super().__init__()
         self.mlp = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.SiLU(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.SiLU(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, output_dim),
         )
 

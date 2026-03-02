@@ -135,7 +135,7 @@ class Hippocampus:
         if not self._memory:
             return [], []
         q = np.asarray(query).ravel()
-        scores = [float(-np.linalg.norm(np.asarray(k).ravel() - q)) for k, _, _ in self._memory]
+        scores = [float(-np.linalg.norm(np.asarray(emb).ravel() - q)) for k, val, emb in self._memory if emb is not None]
         idx = np.argsort(scores)[::-1][:top_k]
         return [scores[i] for i in idx], [self._memory[i][1] for i in idx]
 
