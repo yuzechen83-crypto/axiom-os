@@ -5,6 +5,12 @@ from .sparc import load_sparc_galaxy, load_sparc_multi, SPARC_GALAXIES
 __all__ = ["load_sparc_galaxy", "load_sparc_multi", "SPARC_GALAXIES"]
 
 try:
+    from .elia_grid import load_elia_grid, build_grid_sequences
+    __all__ = list(__all__) + ["load_elia_grid", "build_grid_sequences"]
+except ImportError:
+    pass
+
+try:
     from .bullet_cluster import load_bullet_cluster_mvp, load_bullet_cluster_fits
     __all__ = list(__all__) + ["load_bullet_cluster_mvp", "load_bullet_cluster_fits"]
 except ImportError:

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "axiom-core-proprietary"
+version = "1.0.0"
+description = "Axiom-OS 核心算法 (需授权)"
+requires-python = ">=3.9"
+dependencies = ["numpy", "torch", "scipy"]
+
+[project.optional-dependencies]
+full = ["scikit-learn", "pysr", "pysindy", "sentence-transformers"]
+
+[tool.setuptools]
+package-dir = {"axiom_core_proprietary" = "."}
+packages = ["axiom_core_proprietary", "axiom_core_proprietary.bundle_field"]

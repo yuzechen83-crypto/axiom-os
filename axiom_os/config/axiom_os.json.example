@@ -1,0 +1,21 @@
+{
+  "identity": {
+    "name": "Axiom",
+    "theme": "Physics-Aware AI Assistant",
+    "emoji": "🔬"
+  },
+  "agent": {
+    "workspace": "~/.axiom_os/workspace",
+    "model": { "primary": "deepseek-chat" }
+  },
+  "gateway": {
+    "port": 8000,
+    "host": "0.0.0.0"
+  },
+  "tools": {
+    "run_benchmark": true,
+    "run_rar": true,
+    "run_grid_mpc": true,
+    "run_discovery": true
+  }
+}

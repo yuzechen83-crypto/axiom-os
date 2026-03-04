@@ -1,18 +1,57 @@
-# SPNN-Opt-Rev5 (Axiom-OS)
+# Axiom-OS (SPNN-Opt-Rev5)
 
-物理不变尺度锚定 + 规范耦合神经元的集成框架，实现「物理公理兜底 + 未知边界探索」双重目标。
+[![PyPI Version](https://img.shields.io/pypi/v/axiom-os)](https://pypi.org/project/axiom-os/)
+[![Python Version](https://img.shields.io/pypi/pyversions/axiom-os)](https://pypi.org/project/axiom-os/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-Black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/yuzechen83-crypto/axiom-os/actions/workflows/benchmark.yml/badge.svg)](https://github.com/yuzechen83-crypto/axiom-os/actions)
+[![Downloads](https://pepy.tech/badge/axiom-os)](https://pepy.tech/project/axiom-os)
 
-> **核心技术声明**：详见 [PROPRIETARY_COMPONENTS.md](PROPRIETARY_COMPONENTS.md)。全部实现已开源，可直接调取。
-> 更新日志见 [CHANGELOG.md](CHANGELOG.md)。
+> **物理不变尺度锚定 + 规范耦合神经元的集成框架**，实现「物理公理兜底 + 未知边界探索」双重目标。
 
-## 框架定义
+**核心创新**: RCLN 残差耦合链接神经元 | 物理锚定系统 | 海马体记忆 | 电网 Pulse | 公式发现
+
+---
+
+## 🚀 快速开始
+
+```bash
+# 安装（含 UI + API）
+pip install axiom-os[full]
+
+# 或开发安装
+git clone https://github.com/yuzechen83-crypto/axiom-os.git
+cd axiom-os
+pip install -e ".[full]"
+
+# OpenClaw 风格统一 CLI
+axiom init                    # 初始化 ~/.axiom_os 配置与 workspace
+axiom agent -m "跑基准"       # 单轮 agent（DeepSeek + 工具）
+axiom agent -m "跑 Grid Pulse MPC"
+axiom agent -m "建一个 L 形支架"  # CAD 建模（需 DeepSeek）
+axiom demo acrobot [--fast]   # 演示：双摆踢一脚
+axiom demo eureka [--fast]    # 演示：顿悟时刻公式发现
+axiom demo cad                # 演示：3D 建模过程
+axiom api                     # 启动 REST API (:8000)
+axiom ui                      # 启动 Streamlit 交互界面
+axiom download-elia [--sample] # 下载 Elia 电网数据
+
+# 快捷方式（仍可用）
+axiom-ui           # = axiom ui
+axiom-api          # = axiom api
+axiom-main         # 主循环（双摆控制）
+```
+
+---
+
+## 📐 框架定义
 
 ```
 SPNN = ⟨A, N, C, I, M, O, H, B⟩
 ```
 
 | 符号 | 组件 | 说明 |
-|------|------|------|
+|:----:|------|------|
 | 𝒜 | Physical Anchoring | 物理锚定系统 |
 | 𝒩 | Neuron Network | RCLN 残差耦合链接神经元 |
 | 𝒞 | Coupling Coordinator | 耦合协调器 |
@@ -22,7 +61,9 @@ SPNN = ⟨A, N, C, I, M, O, H, B⟩
 | ℋ | HAL | 硬件抽象层 |
 | ℬ | Physical Scale | 物理标尺系统 |
 
-## 六阶段认知学习链路
+---
+
+## 🔬 六阶段认知学习链路
 
 1. **物理锚定** - 普朗克尺度归一化
 2. **结构蒸馏编码** - Encoder + 海马体检索增强
@@ -31,199 +72,186 @@ SPNN = ⟨A, N, C, I, M, O, H, B⟩
 5. **自适应筛选** - 主脑协调激活神经元
 6. **尺度感知反推** - 标尺恢复输出
 
-## 快速开始
+---
 
-```bash
-git clone <your-repo-url>
-cd PythonProject1
-pip install -r requirements.txt
-python run_spnn_example.py
+## ⚙️ 配置（OpenClaw 风格）
+
+配置路径：`~/.axiom_os/axiom_os.json`（首次运行 `axiom init` 自动创建）
+
+```json
+{
+  "identity": { "name": "Axiom", "theme": "Physics-Aware AI", "emoji": "🔬" },
+  "agent": { "workspace": "~/.axiom_os/workspace", "model": { "primary": "deepseek-chat" } },
+  "gateway": { "port": 8000, "host": "0.0.0.0" }
+}
 ```
 
-**可运行性**：全部组件已合并至 axiom_os，克隆后即可完整运行。
+Workspace 结构：`~/.axiom_os/workspace/` 含 `IDENTITY.md`、`SOUL.md`、`PROJECTS.md`、`ENGINE_DESIGN.md`、`CHIP_DEV.md`。Agent 启动时自动注入 IDENTITY+PROJECTS 到 system prompt，实现「先学习再使用」。
 
-## 基准测试 (Benchmark)
+---
+
+## 🌐 交互与服务
+
+### 前端 UI（Streamlit）
+```bash
+axiom-ui
+# 或 streamlit run axiom_os/agent/chat_ui.py
+```
+- 自然语言输入：跑基准、跑 RAR、跑 Grid Pulse MPC、CAD 建模等
+- 侧边栏 CAD 快捷入口：选择形状一键生成 STL
+- DeepSeek 扩展：需配置 `axiom_os/config/axiom_os_llm.env` 中 `DEEPSEEK_API_KEY`
+
+### REST API
+```bash
+axiom-api
+# 或 uvicorn axiom_os.api.server:app --host 0.0.0.0 --port 8000
+```
+- `GET /` - 服务信息
+- `POST /api/v1/grid-mpc` - Grid Pulse MPC
+- `POST /api/v1/chat` - 自然语言对话
+- `POST /api/v1/cad-model` - CAD 建模（shape, width, height, depth, radius）
+- `GET /api/v1/cad-shapes` - 列出 CAD 形状
+- `POST /api/v1/workspace/read` - 读取 workspace 文档
+- `GET /api/v1/workspace/docs` - 列出 workspace 文档
+- `POST /api/v1/hippocampus/retrieve` - 检索 Hippocampus 物理定律
+- `POST /api/v1/fetch-url` - 抓取 URL 正文（可选保存到 workspace）
+- `POST /api/v1/web-search` - 网页搜索
+- `GET /api/v1/benchmark/report` - 基准报告
+- `POST /api/v1/benchmark/run` - 运行基准
+- `POST /api/v1/rar` - RAR 星系发现
+- API 文档：`http://localhost:8000/docs`
+
+---
+
+## 📊 基准测试
 
 ```bash
 # 快速验证 (~30s)
 python -m axiom_os.benchmarks.run_benchmarks --config quick --report --trend
 
-# 标准配置 (~1min，含 E2E Quick + Memory + Discovery 鲁棒性)
+# 标准配置 (~1min)
 python -m axiom_os.benchmarks.run_benchmarks --config standard --report
 
-# 完整配置 (含全 E2E)
+# 完整配置
 python -m axiom_os.benchmarks.run_benchmarks --config full --report --trend -o full_report.json
-
-# 可选：与 PySR/SINDy 对比（需 pip install pysr pysindy）
-python -m axiom_os.benchmarks.run_benchmarks --config quick --compare-pysr --report
-
-# 高难度 Discovery 套件（稀疏/外推/小样本/Feynman/Lorenz 混沌）
-python -m axiom_os.benchmarks.run_benchmarks --hard --report
-
-# 可复现性：指定随机种子
-python -m axiom_os.benchmarks.run_benchmarks --config quick --seed 42 --report
-
-# Feynman 风格公式发现基准（对标 SRBench）
-python -m axiom_os.experiments.benchmark_feynman --seed 42 --n-seeds 3
-
-# 消融实验：Discovery / RCLN
-python -m axiom_os.diagnostics.discovery_ablation
-python -m axiom_os.diagnostics.rcln_ablation --epochs 100
-
-# 暗物质发现统一管线 (RAR + Theory Validator + Inverse Projection)
-python -m axiom_os.experiments.dark_matter_discovery
-python -m axiom_os.validate_all --dark-matter
-
-# JHTDB 真实湍流 LES-SGS（TBNN + FNO + Smagorinsky 对比）
-python -m axiom_os.experiments.jhtdb_les_sgs
-python -m axiom_os.validate_all --jhtdb-les-sgs
-# 严格空间划分测试
-python -m pytest tests/test_jhtdb_strict.py tests/test_jhtdb_fno.py -v -s
-
-# 公式结晶（RAR 符号公式提取 + 保存 JSON）
-python -m axiom_os.experiments.crystallize_formulas --rar-only
-python -m axiom_os.validate_all --crystallize
-
-# Discovery 发现能力基准（发现公式 vs 已知定律 相似度）
-python -m axiom_os.benchmarks.discovery_capability_benchmark
-
-# Falsification Test: a0 普适性（Gas vs Star 分组）
-python -m axiom_os.experiments.falsify_universality --n-galaxies 30
-
-# Falsification Test: 太阳系约束（高加速度区 Newton 极限）
-python -m axiom_os.experiments.falsify_solar
-
-# Falsification Test: 红移演化（a0(z) Static vs Dynamic）
-python -m axiom_os.experiments.falsify_redshift
-# 真实数据: --data path/to/genzel2017.csv (格式: z,R_kpc,V_rot_km_s,M_bary_Msun)
 ```
 
-报告输出：`axiom_os/benchmarks/results/`（JSON、趋势图、Markdown、HTML、**Discovery vs Baseline 对比图**）
+---
 
-报告含**亮点摘要**：RCLN 吞吐、Discovery R² 提升 vs 线性回归、RAR 符号发现 R²。
+## 🎯 主要功能
 
-**发布到 GitHub**：push 到 `main` 时 CI 会自动跑基准并发布到 GitHub Pages。在仓库 **Settings → Pages** 中来源选 **GitHub Actions**，即可在 `https://<org>.github.io/<repo>/` 查看最新报告（`report.html`、`latest.json`）。
+### 物理AI核心
+- **RCLN 神经元**: 残差耦合链接，物理映射
+- **物理锚定**: 普朗克→工程尺度统一
+- **UPI 接口**: 统一物理契约验证
 
-## 湍流建模 (JHTDB LES-SGS)
+### 电网分析 (Grid Pulse)
+```bash
+python main_grid.py
+```
 
-真实 DNS 数据湍流闭合：Johns Hopkins Turbulence Database → 粗网格速度 → SGS 应力 τ_ij。
-
-| 方法 | R²_test | 说明 |
-|------|---------|------|
-| Smagorinsky | ~0 | 涡粘基线 |
-| TBNN | ~0.15 | Pope 不变量 + 张量基归一化 |
-| FNO | ~0.26 | 3D Fourier 非局部映射 |
-| PINN-LSTM | ~0.85 | 速度预测（不同任务） |
-
+### 湍流建模 (JHTDB)
 ```bash
 python -m axiom_os.experiments.jhtdb_les_sgs
-python -m pytest tests/test_jhtdb_strict.py tests/test_jhtdb_fno.py -v -s
 ```
 
-输出：`jhtdb_les_sgs.json`、`jhtdb_les_sgs_3d.png`、`jhtdb_les_sgs_comparison.png`。
-
-## 公式结晶
-
-RAR Discovery 符号公式提取，保存至 `crystallized_formulas.json`。
-
-```bash
-python -m axiom_os.experiments.crystallize_formulas --rar-only
-python -m axiom_os.experiments.crystallize_formulas --to-hippocampus  # 需 axiom_core_proprietary
-```
-
-## 公式发现 Demo
-
+### 公式发现 (Discovery)
 ```bash
 python -m axiom_os.demos.discovery_demo
+python -m axiom_os.experiments.crystallize_formulas --rar-only
 ```
 
-从带噪数据 `y = x0² + 0.5*x1` 恢复符号公式，对比 Axiom Discovery 与线性回归的 R²。
+### Agent / Chat UI
 
-## Agent 与 MLL
+Axiom-OS 提供交互式聊天界面，支持 DeepSeek LLM 扩展功能。
 
-```bash
-# Chat UI：文本→物理仿真
-streamlit run axiom_os/agent/chat_ui.py
+#### 配置 DeepSeek API
 
-# 多领域学习 (MLL)
-python run_mll.py --domains rar battery turbulence --epochs 200
+1. **获取 API 密钥**：访问 [DeepSeek Platform](https://platform.deepseek.com) 注册并获取 API 密钥
+
+2. **设置环境变量**：
+   ```bash
+   # Linux/Mac
+   export DEEPSEEK_API_KEY=your_api_key_here
+   
+   # Windows (CMD)
+   set DEEPSEEK_API_KEY=your_api_key_here
+   
+   # Windows (PowerShell)
+   $env:DEEPSEEK_API_KEY="your_api_key_here"
+   ```
+
+3. **运行 Chat UI**：
+   ```bash
+   streamlit run axiom_os/agent/chat_ui.py
+   ```
+
+#### DeepSeek 扩展功能
+
+启用 DeepSeek 扩展后，可以通过自然语言：
+- 运行基准测试和获取报告
+- 执行 RAR 星系旋转曲线发现
+- 运行 Discovery 演示
+- 列出和应用领域扩展
+- 获取优化建议
+
+**API 配置**：
+- 端点：`https://api.deepseek.com`
+- 默认模型：`deepseek-chat`
+- 接口格式：OpenAI 兼容 API
+
+---
+
+## 📁 项目结构
+
 ```
-
-Chat 侧边栏可选 **MLL 模式**，一键运行 rar/battery/turbulence 多领域训练。
-
-## Dashboard
-
-```bash
-streamlit run axiom_os/dashboard.py
-```
-
-页签：**组件验证**（阻尼振子、RCLN、Discovery）| **基准报告**（历史 JSON、趋势图）
-
-## 全流程验证
-
-```bash
-python -m axiom_os.validate_all
-# 单模块：--rar | --battery | --turbulence | --jhtdb-les-sgs | --crystallize | --dark-matter
-```
-
-## 项目结构
-
-```
-spnn/
+axiom_os/
 ├── core/           # 物理标尺 B、UPI 接口
 ├── hal/            # 硬件抽象层 ℋ
+├── layers/         # RCLN, FNO, TBNN, PINN-LSTM
 ├── neurons/        # RCLN (F_hard, F_soft, 物理映射)
 ├── memory/         # 海马体 M_H
 ├── orchestrator/   # Axiom-OS 主脑
-├── report/         # 可解释报告
-├── training/       # 多目标损失、三阶段训练
-├── safety/         # 双路径验证、SSC
-├── distributed/    # 物理 MoE、光锥协调
-├── model.py        # SPNN 完整模型
-└── physical_ai.py  # PhysicalAI 完整工作流
+├── datasets/       # 数据加载器
+├── experiments/    # 实验脚本
+├── benchmarks/     # 基准测试
+├── agent/          # Agent / Chat UI
+└── tests/          # 测试套件
 ```
 
-## 系统工作流 (PhysicalAI)
+---
 
-```
-输入物理问题
-    ↓
-[物理标尺系统] → 尺度归一化 → 量纲检查
-    ↓
-[海马体] → 检索类似问题经验
-    ↓
-[主脑] → 制定解决协议链
-    ↓
-For each protocol step:
-    ├─ [UPI接口] → 契约验证
-    ├─ [物理标尺] → 尺度适配
-    ├─ [RCLN细胞] → 计算耦合
-    ├─ [海马体] → 记忆检索/存储
-    └─ [主脑] → 动态路由决策
-    ↓
-[物理标尺系统] → 反归一化输出
-    ↓
-[双路径验证] → 异常检测与处理
-    ↓
-输出物理解 + 置信度 + 可解释报告
+## 🔧 开发
+
+```bash
+# 安装开发依赖
+pip install -e ".[dev]"
+
+# 运行测试
+pytest
+
+# 代码格式化
+black .
+ruff check --fix .
+
+# 类型检查
+mypy axiom_os
 ```
 
-```python
-from spnn import PhysicalAI
+---
 
-ai = PhysicalAI(in_dim=4, hidden_dim=32, out_dim=1)
-res = ai.solve(x, l_e="harmonic_oscillator")
-print(res.result, res.confidence, res.report)
-```
+## 📝 许可证
 
-## 主要创新
+MIT License - 详见 [LICENSE](LICENSE)
 
-- **湍流闭合**：TBNN (Pope 不变量) + FNO (3D 非局部) + JHTDB 真实数据
-- **公式结晶**：RAR McGaugh 符号提取、Hippocampus 知识存储
-- **可微公理势阱**：物理约束架构级引力场
-- **弹性守恒协议**：可协商网络共识
-- **光锥时间协调**：相对论因果结构
-- **结构化海马体**：物理记忆主动维护
-- **智能主脑调度**：资源-物理-风险联合优化
-- **物理标尺系统**：普朗克→工程尺度统一
-- **双路径验证**：安全与探索平衡
+---
+
+## 🙏 致谢
+
+- PyTorch, NumPy, SciPy
+- JHTDB (Johns Hopkins Turbulence Database)
+- 物理AI研究社区
+
+---
+
+> **核心技术声明**: 详见 [PROPRIETARY_COMPONENTS.md](PROPRIETARY_COMPONENTS.md)

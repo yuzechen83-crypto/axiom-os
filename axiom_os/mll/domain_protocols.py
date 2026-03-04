@@ -375,6 +375,47 @@ class AcrobotProtocol(DomainProtocol):
         return {"loss": 0.0, "mae": 0.0}
 
 
+class EngineProtocol(DomainProtocol):
+    """
+    发动机设计领域协议（占位）。
+    待接入：CFD 仿真数据、热力学/流体代理模型。
+    """
+
+    domain = "engine"
+
+    def load_data(self) -> Tuple[np.ndarray, np.ndarray, Dict]:
+        # 占位：无真实数据时返回空
+        X = np.zeros((10, 3))  # 示例：温度、压力、流量
+        y = np.zeros(10)
+        return X, y, {"note": "Engine protocol stub. Connect CFD/surrogate for real data."}
+
+    def train(self, X: Any, y: Any, hippocampus: Optional[Any] = None, epochs: int = 100, **kwargs) -> Dict:
+        return {"model": None, "mae": 0.0, "note": "Stub: no training without data"}
+
+    def evaluate(self, model: Any, X: Any, y: Any) -> Dict[str, float]:
+        return {"mae": 0.0, "r2": 0.0}
+
+
+class ChipProtocol(DomainProtocol):
+    """
+    芯片开发领域协议（占位）。
+    待接入：EDA 仿真、时序/功耗/面积数据。
+    """
+
+    domain = "chip"
+
+    def load_data(self) -> Tuple[np.ndarray, np.ndarray, Dict]:
+        X = np.zeros((10, 2))  # 示例：频率、电压
+        y = np.zeros(10)
+        return X, y, {"note": "Chip protocol stub. Connect EDA/sim for real data."}
+
+    def train(self, X: Any, y: Any, hippocampus: Optional[Any] = None, epochs: int = 100, **kwargs) -> Dict:
+        return {"model": None, "mae": 0.0, "note": "Stub: no training without data"}
+
+    def evaluate(self, model: Any, X: Any, y: Any) -> Dict[str, float]:
+        return {"mae": 0.0, "r2": 0.0}
+
+
 # 协议注册表
 PROTOCOL_REGISTRY: Dict[str, DomainProtocol] = {
     "turbulence": TurbulenceProtocol(),
@@ -382,6 +423,8 @@ PROTOCOL_REGISTRY: Dict[str, DomainProtocol] = {
     "rar": RARProtocol(),
     "battery": BatteryProtocol(),
     "acrobot": AcrobotProtocol(),
+    "engine": EngineProtocol(),
+    "chip": ChipProtocol(),
 }
 
 

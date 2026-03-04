@@ -32,15 +32,23 @@ dependencies = [
     "scikit-learn>=1.0.0",
     "matplotlib>=3.7.0",
     "typing-extensions>=4.5.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.28.0",
 ]
 
 [project.optional-dependencies]
 full = [
     "streamlit>=1.28.0",
     "openai>=1.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
     "astroquery>=0.4.6",
     "astropy>=5.0.0",
     "givernylocal>=3.2.0",
+    "trimesh>=4.0.0",
+    "duckduckgo-search>=4.0.0",
+    "beautifulsoup4>=4.12.0",
+    "trafilatura>=1.6.0",
 ]
 dev = [
     "pytest>=7.4.0",
@@ -63,7 +71,10 @@ Repository = "https://github.com/yuzechen83-crypto/axiom-os"
 Issues = "https://github.com/yuzechen83-crypto/axiom-os/issues"
 
 [project.scripts]
-axiom = "axiom_os.main:main"
+axiom = "axiom_os.cli.main:main"
+axiom-main = "axiom_os.main:main"
+axiom-ui = "axiom_os.agent.chat_ui:run_ui"
+axiom-api = "axiom_os.api.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

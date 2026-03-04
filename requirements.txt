@@ -9,5 +9,8 @@ scipy>=1.10.0
 scikit-learn>=1.0.0
 matplotlib>=3.7.0
 typing-extensions>=4.5.0
-# Agent / Gemini 扩展（可选：Chat 使用 Gemini 时需安装）
-google-generativeai>=0.8.0
+# Agent / LLM 扩展（Chat 使用 DeepSeek 时需 openai；旧 Gemini 可选）
+openai>=1.0.0
+# google-generativeai>=0.8.0  # 已迁移至 DeepSeek
+# Property-based testing
+hypothesis>=6.0.0

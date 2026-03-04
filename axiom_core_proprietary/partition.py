@@ -1,6 +1,7 @@
 """
 Axiom 智能分区模块 - 分区定义
-Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+PROPRIETARY - Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
+Unauthorized copying, modification, or distribution of this algorithm is prohibited.
 
 先学单一场景，再整合到复杂场景。分区按 domain、condition、complexity 定义。
 """
@@ -148,54 +149,6 @@ TURBULENCE_PARTITIONS: List[Partition] = [
 
 
 # ---------------------------------------------------------------------------
-# 高频动力学分区：按振幅/混沌度划分 (用于元轴+FNO 融合测试)
-# 基于序列最后一帧的 |z| 或振幅
-# ---------------------------------------------------------------------------
-
-def _hfreq_low(X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
-    """低振幅区: |z| < 15 (序列取最后一帧 z)"""
-    z = X[:, -1, 2] if X.ndim >= 3 else (X[:, 2] if X.shape[1] >= 3 else X.ravel())
-    return np.abs(z) < 15
-
-
-def _hfreq_mid(X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
-    """中振幅: 15 <= |z| < 35"""
-    z = X[:, -1, 2] if X.ndim >= 3 else (X[:, 2] if X.shape[1] >= 3 else X.ravel())
-    return (np.abs(z) >= 15) & (np.abs(z) < 35)
-
-
-def _hfreq_high(X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
-    """高振幅/强混沌: |z| >= 35"""
-    z = X[:, -1, 2] if X.ndim >= 3 else (X[:, 2] if X.shape[1] >= 3 else X.ravel())
-    return np.abs(z) >= 35
-
-
-HIGH_FREQUENCY_PARTITIONS: List[Partition] = [
-    Partition(
-        id="hfreq_low",
-        domain="high_freq",
-        condition=_hfreq_low,
-        complexity=1,
-        metadata={"modes": 8, "omega_max": 5, "regime": "smooth"},
-    ),
-    Partition(
-        id="hfreq_mid",
-        domain="high_freq",
-        condition=_hfreq_mid,
-        complexity=2,
-        metadata={"modes": 16, "omega_max": 15, "regime": "transition"},
-    ),
-    Partition(
-        id="hfreq_high",
-        domain="high_freq",
-        condition=_hfreq_high,
-        complexity=3,
-        metadata={"modes": 32, "omega_max": 30, "regime": "chaotic"},
-    ),
-]
-
-
-# ---------------------------------------------------------------------------
 # 跨域分区注册表
 # ---------------------------------------------------------------------------
 
@@ -204,7 +157,6 @@ PARTITION_REGISTRY: Dict[str, List[Partition]] = {
     "battery": BATTERY_PARTITIONS,
     "fluids": TURBULENCE_PARTITIONS,
     "rar": RAR_PARTITIONS,
-    "high_freq": HIGH_FREQUENCY_PARTITIONS,
 }
 
 

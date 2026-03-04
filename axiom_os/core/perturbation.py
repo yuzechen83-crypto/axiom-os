@@ -10,6 +10,7 @@ import numpy as np
 from .partition import (
     RAR_PARTITIONS,
     TURBULENCE_PARTITIONS,
+    HIGH_FREQUENCY_PARTITIONS,
     PARTITION_REGISTRY,
     Partition,
 )
@@ -59,6 +60,13 @@ def infer_partition_weights(x: np.ndarray, domain: str) -> List[Tuple[str, float
             w = float(m.sum()) / n if n > 0 else 0.0
             if w > 0:
                 out.append((p.id, w))
+    elif domain == "high_freq":
+        # 序列 (B, seq_len, 3) 或 (B, 3): 用最后一帧 z 推断分区
+        for p in parts:
+            m = p.mask(x)
+            w = float(m.sum()) / n if n > 0 else 0.0
+            if w > 0:
+                out.append((p.id, w))
     else:
         for p in parts:
             m = p.mask(x)
@@ -66,3 +74,23 @@ def infer_partition_weights(x: np.ndarray, domain: str) -> List[Tuple[str, float
             if w > 0:
                 out.append((p.id, w))
     return out if out else [(parts[0].id, 1.0)] if parts else []
+
+
+def infer_partition_per_sample(x: np.ndarray, domain: str) -> Tuple[np.ndarray, List[str]]:
+    """
+    逐样本推断分区。返回 (indices, partition_ids)：
+    - indices: (n,) 每个样本所属分区在 partition_ids 中的索引
+    - partition_ids: 分区 id 列表（与 PARTITION_REGISTRY 顺序一致）
+    用于 scheme_a/c 的 per-sample 分支选择。
+    """
+    x = np.asarray(x, dtype=np.float64)
+    if x.ndim == 1:
+        x = x.reshape(1, -1)
+    n = x.shape[0]
+    parts = PARTITION_REGISTRY.get(domain, RAR_PARTITIONS)
+    partition_ids = [p.id for p in parts]
+    indices = np.full(n, 0, dtype=np.int64)  # 默认第一个分区
+    for idx, p in enumerate(parts):
+        m = p.mask(x)
+        indices[m] = idx
+    return indices, partition_ids

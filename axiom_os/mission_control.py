@@ -92,6 +92,21 @@ q1_init = st.sidebar.slider("θ1 init (rad)", 2.5, 3.5, PI - 0.02)
 q2_init = st.sidebar.slider("θ2 init (rad)", 2.5, 3.5, PI - 0.02)
 
 st.sidebar.divider()
+st.sidebar.markdown("**CAD 建模**")
+with st.sidebar.expander("3D 建模", expanded=False):
+    cad_shape_mc = st.selectbox("形状", ["l_bracket", "box", "cylinder", "sphere", "simple_gear"], key="mc_cad_shape")
+    if st.button("生成 STL", key="mc_cad_btn"):
+        try:
+            from axiom_os.agent.tools import run_cad_model
+            r = run_cad_model(shape=cad_shape_mc)
+            if r.get("ok"):
+                st.success(f"已保存: {r.get('path', '')}")
+            else:
+                st.error(r.get("error", "失败"))
+        except Exception as e:
+            st.error(str(e))
+
+st.sidebar.divider()
 st.sidebar.markdown("**🤖 AI 智能化**")
 use_real_llm = st.sidebar.checkbox("使用真实 LLM (Ollama)", value=False, help="需先运行 ollama pull llama3.2")
 with st.sidebar.expander("Chief Scientist 对话", expanded=False):
