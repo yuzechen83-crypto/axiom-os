@@ -1,0 +1,17 @@
+{
+  "results": {
+    "Swimmer-v5": -14.9200281088714,
+    "Hopper-v5": 118.81709884076423,
+    "Walker2d-v5": -175.2587999992854,
+    "Humanoid-v5": 714.6043984656574
+  },
+  "config": {
+    "steps": 200,
+    "gravity_scale": 1.05,
+    "friction_scale": 0.95,
+    "seed": 42,
+    "train_episodes": 30,
+    "domain_rand": true,
+    "physics_aware": true
+  }
+}

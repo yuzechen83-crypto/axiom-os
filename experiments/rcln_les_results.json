@@ -1,0 +1,33 @@
+{
+  "architecture": "RCLN-LES (Hard Core + Soft Shell)",
+  "data_source": "JHTDB isotropic8192 (REAL DNS)",
+  "smagorinsky": {
+    "mse": 5.33e-07,
+    "r2": -0.5368,
+    "correlation": -0.0847,
+    "description": "Pure Hard Core (Navier-Stokes)"
+  },
+  "rcln_les": {
+    "mse": 5.33e-07,
+    "r2": -0.5359,
+    "correlation": -0.0848,
+    "description": "Hard Core + RCLN Soft Shell"
+  },
+  "key_findings": {
+    "hard_core": "Navier-Stokes equations enforced via strain rate calculation",
+    "soft_shell": "RCLN learns eddy viscosity correction factor",
+    "data_size": "Small sample (8x8x8) limits learning capacity",
+    "comparison": "Similar to Smagorinsky on small data; needs larger dataset for advantage"
+  },
+  "rcln_features": [
+    "Residual connections for gradient flow",
+    "Coupled layers for multi-field interaction",
+    "Physical constraints via Hard Core",
+    "Learns nonlinear correction to linear eddy viscosity"
+  ],
+  "files": {
+    "script": "experiments/rcln_les_turbulence.py",
+    "results": "experiments/rcln_les_results.json",
+    "plot": "docs/images/rcln_les_turbulence.png"
+  }
+}

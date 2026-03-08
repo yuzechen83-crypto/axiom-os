@@ -1,0 +1,31 @@
+{
+  "smagorinsky": {
+    "mse": 6.2e-07,
+    "rmse": 0.00079,
+    "r2": -0.7913,
+    "correlation": -0.0997
+  },
+  "tbnn": {
+    "mse": 2.6e-07,
+    "rmse": 0.00051,
+    "r2": 0.1905,
+    "correlation": 0.7141
+  },
+  "improvement": {
+    "mse_ratio": 2.34,
+    "r2_delta": 0.9818,
+    "corr_delta": 0.8138
+  },
+  "metadata": {
+    "data_shape": [
+      8,
+      8,
+      8,
+      3
+    ],
+    "n_train": 313,
+    "n_test": 135,
+    "dataset": "JHTDB isotropic8192",
+    "coarse_ratio": 2
+  }
+}

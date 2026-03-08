@@ -1,0 +1,37 @@
+# Axiom-OS - Physics-AI Hybrid Operating System
+# Core dependencies (required)
+
+torch>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-learn>=1.0.0
+requests>=2.27.0
+
+# Visualization
+matplotlib>=3.5.0
+streamlit>=1.28.0
+
+# RL/Simulation (optional)
+gymnasium>=0.29.0
+
+# Clifford layers for rotational equivariance (optional)
+cliffordlayers>=0.1.0
+
+# Symbolic regression (optional; PySR requires Julia)
+# pip install pysr  # Only if Julia is installed: https://julialang.org/downloads/
+# Lasso fallback is used when PySR is unavailable
+
+# AI RAG semantic retrieval (optional; Hippocampus use_semantic_rag=True)
+# pip install sentence-transformers  # For semantic law retrieval
+
+# Axiom-Agent (LLM Text-to-Physics)
+openai>=1.0.0
+pyyaml>=6.0
+# anthropic  # Optional: pip install anthropic for Claude
+
+# Axiom-OS v4.0 Holographic Generator (optional)
+# torchdiffeq  # Flow Matching ODE solver (faster inference)
+# gudhi       # Topological Data Analysis (phase transition early warning)
+
+# Testing
+pytest>=7.0.0
