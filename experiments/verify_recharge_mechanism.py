@@ -12,6 +12,7 @@ Phase 2: The Thermocline Connection - Spatial Verification
 - 或使用合成数据验证框架
 """
 
+import os
 import sys
 import torch
 import torch.nn as nn
@@ -20,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple, Optional
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # =============================================================================

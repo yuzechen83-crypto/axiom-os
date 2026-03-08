@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def load_sstoi_data(filepath):

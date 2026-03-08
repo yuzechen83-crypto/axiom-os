@@ -13,12 +13,13 @@ Phase 3: The Climate Fusion - Multi-Horizon Forecast
 """
 
 import sys
+import os
 import torch
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.fusion_rcln import (AxiomFusionRCLN, SSTOnlyModel, 
                                  Z20OnlyModel, PersistenceBaseline)

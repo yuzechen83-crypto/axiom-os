@@ -9,6 +9,7 @@ Physics Goal: Discover the delayed feedback time τ in:
 Where τ represents Rossby wave propagation time across Pacific (~6-9 months).
 """
 
+import os
 import sys
 import torch
 import torch.nn as nn
@@ -17,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple, Dict
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from axiom_os.datasets.noaa_sst import load_nino34_for_discovery
 

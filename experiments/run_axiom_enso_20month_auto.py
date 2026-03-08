@@ -14,7 +14,7 @@ import os
 import urllib.request
 import ssl
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 禁用SSL验证（某些环境需要）
 ssl._create_default_https_context = ssl._create_unverified_context

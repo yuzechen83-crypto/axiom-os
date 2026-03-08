@@ -8,6 +8,7 @@ This tests the ability to predict ENSO phases (El Nino/La Nina)
 beyond the typical 6-month "spring predictability barrier".
 """
 
+import os
 import sys
 import torch
 import torch.nn as nn
@@ -15,7 +16,7 @@ import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, 'C:\\Users\\ASUS\\PycharmProjects\\PythonProject1')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from axiom_os.datasets.noaa_sst_real import load_real_nino34
 
