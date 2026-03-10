@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\core\partition.py
+# hypothesis_version: 6.151.9
+
+[0.3, 0.33, 0.67, 0.7, 1000, 10000, 'Newtonian', 'battery', 'battery_early', 'battery_late', 'battery_mid', 'chaotic', 'deep_MOND', 'fluids', 'g_bar_max', 'g_bar_min', 'generic', 'hfreq_high', 'hfreq_low', 'hfreq_mid', 'high_freq', 'mechanics', 'modes', 'omega_max', 'rar', 'rar_high', 'rar_low', 'rar_mid', 'regime', 'smooth', 't_max', 't_min', 'transition', 'turb_z_high', 'turb_z_low', 'turb_z_mid', 'z_max', 'z_min']

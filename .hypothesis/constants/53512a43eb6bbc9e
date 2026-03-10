@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\engine\discovery.py
+# hypothesis_version: 6.151.9
+
+[1e-12, 1e-10, 1e-06, 0.0001, 0.001, 0.1, 0.5, 1.0, 5000, ' + ', '*', '+', '-', '/', '0', 'FormCandidate', '__builtins__', '_candidates', '_last_y_soft', '_y_mean', '_y_std', 'abs', 'aic', 'bic', 'cos', 'degree', 'exp', 'form_type', 'include_interactions', 'include_log_z', 'inf', 'linear_fallback', 'log', 'log1p', 'np', 'pow', 'pysr', 'sin', 'sqrt', 'square', 't', 'x', 'y', 'z']

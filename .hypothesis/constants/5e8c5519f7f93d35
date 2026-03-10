@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\agent\llm_layer.py
+# hypothesis_version: 6.151.9
+
+[100, 256, '(\\d+)\\s*个?星系', '`', 'anthropic', 'api_key', 'base_url', 'battery', 'benchmark', 'content', 'discovered', 'discovery', 'general_chat', 'gpt-4o-mini', 'intent', 'mpc', 'n_galaxies', 'n_samples', 'openai', 'params', 'pendulum', 'pinn lstm', 'quick', 'r2', 'r2_log', 'rar', 'reasoning', 'reply', 'role', 'rul', 'run_battery', 'run_benchmark_quick', 'run_discovery_demo', 'run_main_sim', 'run_rar', 'run_validate_all', 'sparc', 'system', 'turbulence pinn', 'user', 'validate', '{', '仿真', '仿真完成，未发现新公式。', '全流程', '全部', '公式发现', '关键词匹配', '双摆', '基准', '多项式恢复', '寿命', '径向加速度', '控制', '旋转曲线', '时空预测', '星系', '未匹配到任务', '模拟', '测试', '湍流 pinn', '湍流lstm', '电池', '电池 RUL 任务已跑完。', '符号回归', '试一下', '跑一下', '跑分', '验证', '默认快速验证']

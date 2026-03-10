@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\core\constants.py
+# hypothesis_version: 6.151.9
+
+[1.054571817e-34, 1.380649e-23, 8.8541878128e-12, 6.6743e-11, 1e-08, 1e-06, 299792458.0, 'G', 'I', 'L', 'M', 'T', 'c', 'epsilon_0', 'hbar', 'k_B', 'm_P', 't_P', 'Θ', 'ℓ_P']

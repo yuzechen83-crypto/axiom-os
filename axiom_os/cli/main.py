@@ -116,6 +116,23 @@ def main():
     p_learn = sub.add_parser("self-learn", help="自主搜索学习 AI 与物理领域，进化改进")
     p_learn.set_defaults(func=lambda a: _cmd_self_learn())
 
+    # axiom mujoco（Gymnasium+MuJoCo 控制测试：Swimmer/Hopper/Walker2d/Humanoid）
+    p_mujoco = sub.add_parser("mujoco", help="MuJoCo 控制测试（Sim-to-Real: --gravity-scale）")
+    p_mujoco.add_argument("--env", default="all", choices=["Swimmer-v5", "Hopper-v5", "Walker2d-v5", "Humanoid-v5", "all"], help="all=完成全部测试科目")
+    p_mujoco.add_argument("--steps", type=int, default=100_000, help="运行步数（默认 10 万）")
+    p_mujoco.add_argument("--train", type=int, default=0, metavar="N", help="训练 N episodes 或 --timesteps 步")
+    p_mujoco.add_argument("--timesteps", type=int, default=0, help="PPO/SAC 总步数")
+    p_mujoco.add_argument("--algo", default="PPO", choices=["PPO", "SAC"], help="PPO 或 SAC")
+    p_mujoco.add_argument("--domain-rand", action="store_true", help="域随机化训练")
+    p_mujoco.add_argument("--physics-aware", action="store_true", help="物理感知 Policy")
+    p_mujoco.add_argument("--analyze-walker2d", action="store_true", help="Walker2d 敏感性分析")
+    p_mujoco.add_argument("--gravity-scale", type=float, default=1.0)
+    p_mujoco.add_argument("--friction-scale", type=float, default=1.0)
+    p_mujoco.add_argument("--seed", type=int, default=42)
+    p_mujoco.add_argument("--render", action="store_true")
+    p_mujoco.add_argument("--output", "-o", help="输出结果到 JSON/MD")
+    p_mujoco.set_defaults(func=lambda a: _cmd_mujoco(a))
+
     args = parser.parse_args()
     if not args.cmd:
         parser.print_help()
@@ -152,6 +169,33 @@ def _cmd_self_learn():
         [sys.executable, "-m", "axiom_os.scripts.self_learn"],
         cwd=str(ROOT),
     ).returncode
+
+
+def _cmd_mujoco(args):
+    """运行 MuJoCo 控制测试"""
+    import subprocess
+    cmd = [
+        sys.executable, "-m", "axiom_os.scripts.run_mujoco",
+        "--env", args.env,
+        "--steps", str(args.steps),
+        "--train", str(args.train),
+        "--timesteps", str(getattr(args, "timesteps", 0)),
+        "--algo", getattr(args, "algo", "PPO"),
+        "--gravity-scale", str(args.gravity_scale),
+        "--friction-scale", str(args.friction_scale),
+        "--seed", str(args.seed),
+    ]
+    if args.render:
+        cmd.append("--render")
+    if getattr(args, "domain_rand", False):
+        cmd.append("--domain-rand")
+    if getattr(args, "physics_aware", False):
+        cmd.append("--physics-aware")
+    if getattr(args, "analyze_walker2d", False):
+        cmd.append("--analyze-walker2d")
+    if getattr(args, "output", None):
+        cmd.extend(["--output", args.output])
+    return subprocess.run(cmd, cwd=str(ROOT)).returncode
 
 
 if __name__ == "__main__":

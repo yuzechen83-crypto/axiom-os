@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\axiom\credibility.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-08, 0.01, 0.1, 0.5, 0.99, 1.0, -100, 100, 1000, 'consistency', 'error', 'input', 'observed', 'output', 'predicted', 'timestamp']

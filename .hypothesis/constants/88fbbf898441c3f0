@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\datasets\sparc.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-20, 1e-12, 1e-08, 1e-06, 0.1, 0.15, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0, 2.0, 3.0, 5.0, 10.0, 15.0, 25.0, 80.0, 100.0, 150.0, 1000000.0, 3.08567758128e+19, 100, 150, 175, 200, 1000, '!', '#', '-', '----', '.dat', '.mrt', '.rotmod', '.txt', '/', 'AxiomOS/1.0', 'Bytes', 'Format', 'Label', 'NGC\\s*(\\d+)', 'NGC_2403', 'NGC_2841', 'NGC_2903', 'NGC_2976', 'NGC_3031', 'NGC_3198', 'NGC_3521', 'NGC_3621', 'NGC_4321', 'NGC_4535', 'NGC_4536', 'NGC_4548', 'NGC_4579', 'NGC_4736', 'NGC_5055', 'NGC_628', 'NGC_6503', 'NGC_6946', 'NGC_7331', 'NGC_925', 'R', 'R(', 'RAR.mrt', 'Rotmod_LTG.zip', 'SPARC_ZIP_PATH', 'User-Agent', 'V_bulge', 'V_disk', 'V_gas', 'V_obs', '_', 'data', 'ignore', 'meta', 'name', 'nfw', 'r', 'replace', 'utf-8']

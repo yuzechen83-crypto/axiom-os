@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\neurons\registry.py
+# hypothesis_version: 6.151.9
+
+['0.1.0', 'INPUT_UNITS', 'acrobot_residual', 'author', 'class', 'control', 'control_residual', 'description', 'domain', 'electromagnetism', 'fluids', 'generic', 'id', 'mechanics', 'thermodynamics', 'turbulence_residual', 'version']

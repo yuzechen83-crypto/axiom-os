@@ -1,0 +1,50 @@
+{
+  "traditional": {
+    "val_mse": 11.559245109558105,
+    "val_rmse": 3.3998889848873164,
+    "description": "Traditional Smagorinsky (Cs=0.16)"
+  },
+  "pure_fno": {
+    "train_mse": 0.012468073517084122,
+    "train_rmse": 0.11166053265333176,
+    "val_mse": 0.01607770472764969,
+    "val_rmse": 0.1267978847026825,
+    "val_mae": 0.08685694634914398,
+    "val_corr": 0.8082931041717529,
+    "max_error": 1.0544686317443848,
+    "consistency_score": 1.0,
+    "violations": {
+      "realizability": 0,
+      "dissipation_sign": 0,
+      "asymmetry": 0
+    },
+    "description": "Pure FNO (AutoML-style)"
+  },
+  "rcln_fixed": {
+    "train_mse": 0.013331775553524494,
+    "train_rmse": 0.11546330899000168,
+    "val_mse": 0.016852622851729393,
+    "val_rmse": 0.1298176497220993,
+    "val_mae": 0.08932577818632126,
+    "val_corr": 0.7978757619857788,
+    "max_error": 1.0603291988372803,
+    "consistency_score": 1.0,
+    "violations": {
+      "realizability": 0,
+      "dissipation_sign": 0,
+      "asymmetry": 0
+    },
+    "cs_final": 0.14452068507671356,
+    "description": "RCLN v3 (learnable Cs)"
+  },
+  "generalization": {
+    "fno": {
+      "success": true,
+      "mse": 0.020272184163331985
+    },
+    "rcln": {
+      "success": true,
+      "mse": 0.019855579361319542
+    }
+  }
+}

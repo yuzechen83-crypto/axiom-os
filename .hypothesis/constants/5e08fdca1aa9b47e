@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\datasets\elia_grid.py
+# hypothesis_version: 6.151.9
+
+[-1.0, 0.005, 0.01, 0.02, 0.08, 0.1, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.5, 10.0, 50.0, 500.0, 25000.0, 150, 200, 50000, '1min', '2022-01-01', 'axiom_os', 'data', 'data_source', 'date', 'dt_sec', 'elia_2022.csv', 'elia_2023.csv', 'elia_grid.csv', 'freq', 'frequency_Hz', 'hz', 'imbal', 'imbalance_MW', 'load_GW', 'm', 'mw', 'real', 'regul', 'solar_GW', 'synthetic', 'time', 'timestamp', 'to_datetime', 'wind_GW']

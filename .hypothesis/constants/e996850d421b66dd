@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\agent\dispatcher.py
+# hypothesis_version: 6.151.9
+
+[200, '--config', '--no-fail-on-alerts', '--report', 'dispatched', 'done', 'elapsed', 'epochs', 'error', 'main_sim', 'n_galaxies', 'need_artifacts', 'ok', 'quick', 'reply', 'report_dir', 'result', 'run_benchmarks']

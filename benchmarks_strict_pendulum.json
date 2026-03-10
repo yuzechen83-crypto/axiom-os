@@ -1,0 +1,16 @@
+{
+  "env_name": "Pendulum-v1",
+  "n_episodes": 2,
+  "success_rate": 0.0,
+  "mean_reward": -362.6761278622329,
+  "std_reward": 4.588933557281706,
+  "mean_length": 50.0,
+  "all_rewards": [
+    -358.08719430495114,
+    -367.26506141951455
+  ],
+  "all_lengths": [
+    50,
+    50
+  ]
+}

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\layers\__init__.py
+# hypothesis_version: 6.151.9
+
+['ActivityMonitor', 'CliffordActivation', 'CliffordLinear', 'DiscoveryHotspot', 'FNO2d', 'FNO3d', 'HAS_CLIFFORD', 'HolographicFNO', 'HolographicRCLN', 'HolographicTensorNet', 'LSTMSoftShell', 'MERASoftShell', 'MetaProjectionLayer', 'MetaProjectionModel', 'PhysicsInformedLSTM', 'RCLNLayer', 'SpectralConv1d', 'SpectralConv2d', 'SpectralConv3d', 'SpectralSoftShell', 'TBNN', 'projection_kernel', 'stack_tensor_basis']

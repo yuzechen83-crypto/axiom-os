@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\layers\clifford_transformer.py
+# hypothesis_version: 6.151.9
+
+[0.1, '-inf', 'bsik,btjk->bsij', 'bst,btk->bsk', 'ij,bsi,btj->bst']

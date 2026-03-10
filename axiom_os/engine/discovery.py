@@ -20,7 +20,9 @@ except ImportError:
     HAS_PYSR = False
 
 try:
-    from sklearn.linear_model import Lasso, Ridge, ElasticNet
+    from sklearn.linear_model import Lasso, Ridge, ElasticNet, RidgeCV
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.metrics import mean_squared_error
     HAS_SKLEARN = True
 except ImportError:
     HAS_SKLEARN = False
@@ -280,8 +282,63 @@ class DiscoveryEngine:
             except Exception:
                 pass
 
-        # Fallback: Lasso -> Ridge -> ElasticNet (robust to collinearity)
+        # Fallback: Polynomial Regression - prefer degree=2 for physical formulas
+        # Tries degree=2 first (quadratic captures most physics), falls back to 1 or 3
         if HAS_SKLEARN:
+            n_samples = pi_in.shape[0]
+            candidates = []
+            
+            # Try polynomial degrees: 2 (preferred for physics), 1 (linear fallback)
+            # Note: degree=3 disabled to avoid over-complex formulas
+            for degree in [2, 1]:
+                try:
+                    poly = PolynomialFeatures(degree=degree, include_bias=False)
+                    X_poly = poly.fit_transform(pi_in)
+                    
+                    # Use RidgeCV for stable regression
+                    alphas = [1e-4, 1e-3, 1e-2, 0.1]
+                    model = RidgeCV(alphas=alphas, cv=min(3, max(2, n_samples//10)))
+                    model.fit(X_poly, pi_out)
+                    
+                    y_pred = model.predict(X_poly)
+                    mse = mean_squared_error(pi_out, y_pred)
+                    
+                    # Build formula string
+                    feature_names = poly.get_feature_names_out([f"x{i}" for i in range(pi_in.shape[1])])
+                    terms = []
+                    for coef, name in zip(model.coef_, feature_names):
+                        if abs(coef) > 1e-4:
+                            clean_name = name.replace(" ", "*")
+                            terms.append(f"{coef:.4f}*{clean_name}")
+                    
+                    if abs(model.intercept_) > 1e-4:
+                        terms.append(f"{model.intercept_:.4f}")
+                    
+                    formula = " + ".join(terms) if terms else "0"
+                    candidates.append((degree, mse, formula))
+                    
+                except Exception:
+                    continue
+            
+            if candidates:
+                # Prefer degree=2 if MSE is good enough (within 10% of best)
+                best_mse = min(c[1] for c in candidates)
+                
+                # First try degree=2
+                deg2_candidates = [c for c in candidates if c[0] == 2]
+                if deg2_candidates and deg2_candidates[0][1] < best_mse * 1.1:
+                    return deg2_candidates[0][2]
+                
+                # Otherwise use simplest model with good MSE
+                for degree in [1, 2, 3]:
+                    for deg, mse, formula in candidates:
+                        if deg == degree and mse < best_mse * 1.05:
+                            return formula
+                
+                # Fallback: any candidate
+                return candidates[0][2]
+            
+            # Ultimate fallback: simple linear Lasso
             for model in [
                 Lasso(alpha=0.0001, max_iter=5000),
                 Ridge(alpha=0.0001),

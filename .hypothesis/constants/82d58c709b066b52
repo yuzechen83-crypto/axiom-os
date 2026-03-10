@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\agent\runner.py
+# hypothesis_version: 6.151.9
+
+[0.001, 0.02, 0.05, 0.1, 0.2, 0.5, 3.14159, 100, 200, 500, '#', ',', ':', 'H_func', '[]', 'axiom_agent_', 'config.py', 'discovered', 'dt', 'friction', 'hard_core_func', 'horizon_steps', 'log', 'n_samples', 'objective.py', 'p', 'physics', 'physics.py', 'plots', 'q', 'state_dim', 'target_state', 'trajectory', 'trajectory.npz', 'utf-8']

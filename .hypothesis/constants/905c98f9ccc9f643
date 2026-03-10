@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\orchestrator\distillation.py
+# hypothesis_version: 6.151.9
+
+[-25.0, 0.001, 0.02, 0.1, 1.0, 10.0, 25.0, 1000.0, 100, 256, 500, 1000, 100000, 'Buffer empty', 'action_bounds', 'cpu', 'cuda']

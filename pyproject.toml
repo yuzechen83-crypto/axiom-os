@@ -50,6 +50,12 @@ full = [
     "beautifulsoup4>=4.12.0",
     "trafilatura>=1.6.0",
 ]
+mujoco = [
+    "gymnasium>=0.29.0",
+    "mujoco>=3.0.0",
+    "imageio>=2.31.0",
+    "stable-baselines3>=2.0.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",

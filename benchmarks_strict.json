@@ -1,0 +1,16 @@
+{
+  "env_name": "Acrobot-v1",
+  "n_episodes": 2,
+  "success_rate": 0.0,
+  "mean_reward": -50.0,
+  "std_reward": 0.0,
+  "mean_length": 50.0,
+  "all_rewards": [
+    -50.0,
+    -50.0
+  ],
+  "all_lengths": [
+    50,
+    50
+  ]
+}

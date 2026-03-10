@@ -4,6 +4,11 @@ Copyright (c) 2026 yuzechen83-crypto. All Rights Reserved.
 
 Stores crystallized physical laws found by the system.
 
+Axiom-OS v4.0: Added GraphRAG backend (knowledge graph + vector DB)
+- Topological retrieval: Graph traversal for related concepts
+- Cross-domain reasoning: Analogies between physics domains
+- Structured knowledge: Entities, relations, dimensional units
+
 RAG: retrieve_by_query supports keyword (default) and optional semantic embeddings.
 """
 
@@ -24,6 +29,17 @@ try:
     HAS_SENTENCE_TRANSFORMERS = True
 except ImportError:
     HAS_SENTENCE_TRANSFORMERS = False
+
+# Axiom-OS v4.0: GraphRAG support
+try:
+    from .graphrag_hippocampus import GraphRAGHippocampus, PhysicsKnowledgeGraph
+    HAS_GRAPHRAG = True
+except ImportError:
+    try:
+        from graphrag_hippocampus import GraphRAGHippocampus, PhysicsKnowledgeGraph
+        HAS_GRAPHRAG = True
+    except ImportError:
+        HAS_GRAPHRAG = False
 
 
 def _formula_to_callable(
@@ -89,6 +105,8 @@ class Hippocampus:
     Knowledge Registry: Stores crystallized physical laws.
     Crystallize: Move discovered formulas into hard_core, reset soft_shell.
     RAG: use_semantic_rag=True + sentence-transformers → 语义检索；否则关键词检索。
+    
+    Axiom-OS v4.0: Added GraphRAG backend for topological/cross-domain retrieval.
     """
 
     def __init__(
@@ -98,6 +116,7 @@ class Hippocampus:
         use_semantic_rag: bool = False,
         embedding_model: str = "paraphrase-MiniLM-L3-v2",
         use_bundle_field: bool = True,
+        use_graphrag: bool = False,  # v4.0: Enable GraphRAG backend
     ):
         self.dim = dim
         self.capacity = capacity
@@ -113,6 +132,13 @@ class Hippocampus:
                 self._bundle_field = MetaAxisBundleField()
             except ImportError:
                 self._bundle_field = None
+        
+        # v4.0: GraphRAG backend
+        self.use_graphrag = use_graphrag and HAS_GRAPHRAG
+        self._graphrag: Optional[GraphRAGHippocampus] = None
+        if self.use_graphrag:
+            self._graphrag = GraphRAGHippocampus()
+            print(f"[Hippocampus] GraphRAG backend enabled ({len(self._graphrag.kg.entities)} entities)")
 
     def store(
         self,
@@ -203,17 +229,28 @@ class Hippocampus:
         top_k: int = 5,
         partition_id: Optional[str] = None,
         domain: Optional[str] = None,
+        use_graphrag: Optional[bool] = None,
     ) -> str:
         """
         RAG: Retrieve laws by keyword or semantic relevance to question.
         支持 partition_id / domain 过滤（分区检索增强）。
+        
+        Axiom-OS v4.0: Added GraphRAG backend for topological/cross-domain retrieval.
 
         Args:
             question: 查询
             top_k: 返回条数
             partition_id: 仅检索该分区的定律
             domain: 仅检索该 domain 的定律
+            use_graphrag: 是否使用 GraphRAG (默认=self.use_graphrag)
         """
+        # v4.0: Use GraphRAG if enabled
+        if use_graphrag is None:
+            use_graphrag = self.use_graphrag
+        
+        if use_graphrag and self._graphrag is not None:
+            return self._graphrag.retrieve_by_query(question, top_k=top_k)
+        
         if not self.knowledge_base:
             return ""
         # 分区/domain 过滤
@@ -319,6 +356,19 @@ class Hippocampus:
         entry.update(metadata)
 
         self.knowledge_base[formula_id] = entry
+        
+        # v4.0: Also store in GraphRAG knowledge graph
+        if self.use_graphrag and self._graphrag is not None:
+            domain = metadata.get("domain", "mechanics")
+            units = metadata.get("units")
+            related = metadata.get("related_concepts", [])
+            self._graphrag.store_crystallized_law(
+                formula=formula_str,
+                domain=domain,
+                name=formula_id,
+                units=units,
+                related_concepts=related,
+            )
 
         # 元轴丛场：结晶时同步到 bundle_field
         if self._bundle_field is not None:
@@ -462,3 +512,47 @@ class Hippocampus:
         if not results:
             return None
         return np.mean(results, axis=0)
+
+    # -------------------------------------------------------------------------
+    # Axiom-OS v4.0: GraphRAG cross-domain reasoning methods
+    # -------------------------------------------------------------------------
+
+    def suggest_cross_domain_transfer(
+        self,
+        current_domain: str,
+        problem_description: str,
+    ) -> str:
+        """
+        Axiom-OS v4.0: Suggest techniques from other domains via GraphRAG analogies.
+        
+        Example: "fluids" + "field evolution" might suggest Maxwell's equations techniques.
+        
+        Args:
+            current_domain: Current physics domain
+            problem_description: Description of the problem
+        
+        Returns:
+            Suggestions for cross-domain technique transfer
+        """
+        if not self.use_graphrag or self._graphrag is None:
+            return "GraphRAG not enabled. Set use_graphrag=True to enable cross-domain reasoning."
+        
+        return self._graphrag.suggest_transfer_learning(current_domain, problem_description)
+    
+    def get_graph_statistics(self) -> dict:
+        """
+        Get statistics about the knowledge graph.
+        
+        Returns:
+            Dict with entity count, relation count, etc.
+        """
+        if not self.use_graphrag or self._graphrag is None:
+            return {"graphrag_enabled": False}
+        
+        kg = self._graphrag.kg
+        return {
+            "graphrag_enabled": True,
+            "entities": len(kg.entities),
+            "relations": len(kg.relations),
+            "domains": list(kg.DOMAINS.keys()),
+        }

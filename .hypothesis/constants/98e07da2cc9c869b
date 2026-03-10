@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\core\bundle_field\__init__.py
+# hypothesis_version: 6.151.9
+
+[0.1, 'AxisIndex', 'BasePoint', 'BaseSpace', 'ChainReaction', 'Connection', 'ConnectionEdge', 'ConnectionType', 'Fiber', 'FormulaEntry', 'MetaAxisBundleField', 'Regime', 'ResidualRole', 'Section', 'mechanics', 'predict', 'principal', 'weak']

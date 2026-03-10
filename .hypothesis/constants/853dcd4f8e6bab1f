@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\training\losses.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-08, 0.1, 0.3, 0.4, 'batchmean', 'memory', 'phys', 'pred', 'reg', 'scale', 'total', 'value']

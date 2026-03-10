@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\axiom\error_attribution.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1000000.0, 'ai_exploration', 'check_sensors', 'context', 'investigate', 'magnitude', 'monitor_and_log', 'normal', 'parametric_drift', 'reduce_step_size', 'report', 'request_calibration', 'sensor_anomaly', 'spatial_correlation', 'structural_mismatch', 'symmetry_violation', 'temporal_correlation', 'timestamp']

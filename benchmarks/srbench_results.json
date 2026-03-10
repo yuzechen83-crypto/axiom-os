@@ -1,0 +1,67 @@
+{
+  "total_formulas": 5,
+  "success_count": 5,
+  "success_rate": 1.0,
+  "exact_match_count": 0,
+  "exact_match_rate": 0.0,
+  "mean_r2": 0.9926624138228565,
+  "mean_similarity": 1.0,
+  "total_time": 1.793328046798706,
+  "results": [
+    {
+      "formula_name": "I.6.2a",
+      "ground_truth": "E = m * c^2",
+      "discovered": "0.5067*m + 0.7127*c + -0.009003*m^2 + 0.1909*c^2 + 0.4304*m*c + -0.2098",
+      "exact_match": false,
+      "r2_score": 0.9920079068430384,
+      "mse": 314.5477176632622,
+      "structural_similarity": 1.0,
+      "success": true,
+      "training_time": 1.5072035789489746
+    },
+    {
+      "formula_name": "I.8.14",
+      "ground_truth": "d = v * t",
+      "discovered": "0.6728*v + 0.6132*t + 0.3686*v*t + -0.02386",
+      "exact_match": false,
+      "r2_score": 0.9966723511094,
+      "mse": 1.6801470625870465,
+      "structural_similarity": 1.0,
+      "success": true,
+      "training_time": 0.06948637962341309
+    },
+    {
+      "formula_name": "I.12.1",
+      "ground_truth": "F = mu * N",
+      "discovered": "0.6728*mu + 0.6132*N + 0.3686*mu*N + -0.02386",
+      "exact_match": false,
+      "r2_score": 0.9971555334202571,
+      "mse": 1.4361858253983277,
+      "structural_similarity": 1.0,
+      "success": true,
+      "training_time": 0.07207202911376953
+    },
+    {
+      "formula_name": "I.12.11",
+      "ground_truth": "E = 0.5 * m * v^2",
+      "discovered": "0.5067*m + 0.7127*v + -0.009003*m^2 + 0.1909*v^2 + 0.4304*m*v + -0.2098",
+      "exact_match": false,
+      "r2_score": 0.9913395556257834,
+      "mse": 85.21306491174349,
+      "structural_similarity": 1.0,
+      "success": true,
+      "training_time": 0.07102775573730469
+    },
+    {
+      "formula_name": "I.14.3",
+      "ground_truth": "U = m * g * h",
+      "discovered": "0.4936*m + 0.5209*g + 0.4934*h + 0.003384*m^2 + 0.0003174*g^2 + -0.0003902*h^2 + 0.2876*m*g + 0.2682*m*h + 0.2947*g*h + -0.007876",
+      "exact_match": false,
+      "r2_score": 0.9861367221158035,
+      "mse": 288.78991309564685,
+      "structural_similarity": 1.0,
+      "success": true,
+      "training_time": 0.07353830337524414
+    }
+  ]
+}

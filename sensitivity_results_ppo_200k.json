@@ -1,0 +1,78 @@
+{
+  "walker2d_sensitivity": [
+    {
+      "label": "Standard",
+      "g": 1.0,
+      "f": 1.0,
+      "reward": 3861.155389790739,
+      "final_g_scale": 0.5,
+      "final_f_scale": 0.8859403004261266,
+      "param_updates": 45
+    },
+    {
+      "label": "g+5% f-5%",
+      "g": 1.05,
+      "f": 0.95,
+      "reward": 3946.0179886892333,
+      "final_g_scale": 0.660781984626542,
+      "final_f_scale": 0.8830896543525938,
+      "param_updates": 52
+    },
+    {
+      "label": "g-5% f+5%",
+      "g": 0.95,
+      "f": 1.05,
+      "reward": 3894.4511919440197,
+      "final_g_scale": 0.5,
+      "final_f_scale": 0.8972945171688002,
+      "param_updates": 43
+    },
+    {
+      "label": "g+10% f-10%",
+      "g": 1.1,
+      "f": 0.9,
+      "reward": 4025.780305942205,
+      "final_g_scale": 0.6083206636845644,
+      "final_f_scale": 0.8919003617747798,
+      "param_updates": 51
+    },
+    {
+      "label": "g-10% f+10%",
+      "g": 0.9,
+      "f": 1.1,
+      "reward": 3896.0232753504106,
+      "final_g_scale": 0.5,
+      "final_f_scale": 0.8934385461750513,
+      "param_updates": 45
+    },
+    {
+      "label": "High Gravity / Low Friction",
+      "g": 1.2,
+      "f": 0.8,
+      "reward": 4090.316218111943,
+      "final_g_scale": 0.5,
+      "final_f_scale": 0.8763663591408061,
+      "param_updates": 54
+    },
+    {
+      "label": "Low Gravity / High Friction",
+      "g": 0.8,
+      "f": 1.2,
+      "reward": 3840.1386429966024,
+      "final_g_scale": 0.5,
+      "final_f_scale": 0.8936298514841807,
+      "param_updates": 49
+    }
+  ],
+  "robustness_metrics": {
+    "baseline_reward": 3861.155389790739,
+    "min_reward": 3840.1386429966024,
+    "mean_reward": 3936.269001832165,
+    "reward_drop_worst": 21.016746794136452,
+    "robustness_score": 1.0194536617771406
+  },
+  "metadata": {
+    "model": "walker2d_ppo_200k",
+    "total_steps": 200000
+  }
+}

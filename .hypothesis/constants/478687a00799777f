@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\hal\hal.py
+# hypothesis_version: 6.151.9
+
+[1.0, 1024, 'cpu', 'cuda', 'gpu', 'gpu_mem_alloc', 'gpu_mem_reserved', 'mem']

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\safety\dual_path.py
+# hypothesis_version: 6.151.9
+
+[-1000000.0, 0.0, 1e-08, 1.0, 1000000.0, 'confidence', 'detection_score', 'explore', 'hybrid', 'novelty', 'route', 'safe']

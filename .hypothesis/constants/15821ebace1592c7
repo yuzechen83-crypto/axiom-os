@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\engine\fine_tune.py
+# hypothesis_version: 6.151.9
+
+[1e-14, 1e-08, 1.0, 100.0, 3700.0, 50000.0, 100, ',', '\\babs\\s*\\(', '\\bcos\\s*\\(', '\\bexp\\s*\\(', '\\blog\\s*\\(', '\\bpow\\s*\\(', '\\bsin\\s*\\(', '\\bsqrt\\s*\\(', '\\btanh\\s*\\(', 'a', 'a0', 'a0_precise', 'eps', 'error', 'g0', 'g_bar', 'g_obs = ', 'gbar', 'improvement', 'inf', 'n_iters', 'pred = ', 'rmse_after', 'rmse_before', 'success', 'torch', 'torch.', 'torch.abs(', 'torch.cos(', 'torch.exp(', 'torch.log(', 'torch.pow(', 'torch.sin(', 'torch.sqrt(', 'torch.tanh(', 'x', 'x ', 'y = ', 'y=']

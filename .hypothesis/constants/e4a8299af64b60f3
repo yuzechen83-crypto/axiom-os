@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\core\hippocampus.py
+# hypothesis_version: 6.151.9
+
+[1e-09, 1.0, 5000, '\\W+', '__builtins__', '__iter__', 'abs', 'callable', 'capacity', 'confidence', 'cos', 'default', 'dim', 'domain', 'exp', 'formula', 'id', 'key', 'knowledge_base', 'log', 'mechanics', 'memory', 'np', 'output_dim', 'partition_id', 'perturbation', 'pow', 'principal', 'r', 'reset_parameters', 'sin', 'soft_shell', 'sqrt', 'target', 'tolist', 'type', 'utf-8', 'value', 'values', 'w', 'weak', 'x']

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\datasets\atmospheric_turbulence.py
+# hypothesis_version: 6.151.9
+
+[-2.0, 0.0, 1e-12, 1e-10, 7.292e-05, 0.1, 0.12, 0.15, 0.3, 0.5, 1.0, 2.0, 15.0, 39.9, 116.4, 1013.0, 10000.0, 1000000.0, 120, 180, ',', 'AxiomOS/1.0', 'P', 'T', 'User-Agent', 'data_source', 'hourly', 'ij', 'lat_range', 'lon_range', 'n_points', 'n_series', 'n_t', 'real', 'surface_pressure', 'synthetic', 'temperature_2m', 'time', 'uv', 'wind_direction_10m', 'wind_direction_120m', 'wind_direction_180m', 'wind_direction_80m', 'wind_speed_10m', 'wind_speed_120m', 'wind_speed_180m', 'wind_speed_80m']

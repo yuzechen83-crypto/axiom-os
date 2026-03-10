@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\ionization\ionization_module.py
+# hypothesis_version: 6.151.9
+
+[1e-10, 0.1, 100.0, 'dimensionless', 'eV', 'electrolyte', 'electron_temperature', 'gas_ionized', 'ion_density', 'ionization_degree', 'ions/m³', 'plasma', 'valid', 'violations']

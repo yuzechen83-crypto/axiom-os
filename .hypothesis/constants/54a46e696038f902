@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\datasets\bullet_cluster.py
+# hypothesis_version: 6.151.9
+
+[1e-20, 1e-10, 1e-06, 0.25, 0.296, 0.3, 0.7, 1.0, 1.5, 4.0, 100.0, 720.0, 1180.0, 3000.0, 1000000000000000.0, -800, -600, 120, 150, 200, 600, 800, ',', 'FITS', 'R_cluster', 'g_mean', 'no FITS loaded', 'rho_bar_norm', 'rho_mean', 't_ref', 'v_collision_norm', 'v_ref', 'x_offset_local_norm']

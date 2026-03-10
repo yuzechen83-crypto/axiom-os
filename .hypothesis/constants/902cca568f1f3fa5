@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn_evo\core\features_2d.py
+# hypothesis_version: 6.151.9
+
+[-0.5, 0.05, 1.0, 'advection', 'lap_omega', 'omega_x', 'omega_y', 'replicate']

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\engine\forms.py
+# hypothesis_version: 6.151.9
+
+[-1.0, -0.8, -0.5, -0.3, -0.2, -0.1, -0.01, 0.0, 1e-12, 1e-10, 1e-08, 1e-06, 0.001, 0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9, 1.0, 2.0, 10.0, 10000000000.0, 2000, 5000, ' + ', '0', 'a', 'a1', 'a2', 'b1', 'b2', 'base', 'beta', 'c', 'exp', 'exp (fit failed)', 'exp (scipy required)', 'exp(-2t)', 'exp(-3t)', 'exp(-t)', 'form_type', 'intercept', 'k', 'log', 'log (fit failed)', 'log (scipy required)', 'log(1+t)', 'log(1+z)', 'multivar_poly', 'piecewise', 'poly', 'poly (fit failed)', 'power', 'power (fit failed)', 'sqrt(t)', 't', 't^2', 't^3', 't_break', 'x', 'y', 'z']

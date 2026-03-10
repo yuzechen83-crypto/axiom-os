@@ -29,9 +29,8 @@ axiom init                    # 初始化 ~/.axiom_os 配置与 workspace
 axiom agent -m "跑基准"       # 单轮 agent（DeepSeek + 工具）
 axiom agent -m "跑 Grid Pulse MPC"
 axiom agent -m "建一个 L 形支架"  # CAD 建模（需 DeepSeek）
-axiom demo acrobot [--fast]   # 演示：双摆踢一脚
-axiom demo eureka [--fast]    # 演示：顿悟时刻公式发现
-axiom demo cad                # 演示：3D 建模过程
+axiom mujoco --env Hopper-v5 [--gravity-scale 1.1]  # MuJoCo 控制测试（Sim-to-Real）
+axiom self-learn              # 自主学习 AI/物理
 axiom api                     # 启动 REST API (:8000)
 axiom ui                      # 启动 Streamlit 交互界面
 axiom download-elia [--sample] # 下载 Elia 电网数据
@@ -120,6 +119,39 @@ axiom-api
 - `POST /api/v1/benchmark/run` - 运行基准
 - `POST /api/v1/rar` - RAR 星系发现
 - API 文档：`http://localhost:8000/docs`
+
+---
+
+## 🤖 Gymnasium + MuJoCo 控制测试
+
+AI 控制领域的「高考」：Swimmer / Hopper / Walker2d / Humanoid
+
+```bash
+# 安装 MuJoCo 依赖
+pip install axiom-os[mujoco]
+# 或: pip install gymnasium mujoco
+
+# 运行测试（默认 Hopper）
+axiom mujoco --env Hopper-v5 --steps 1000
+
+# Sim-to-Real：人为修改重力/摩擦，测试 Axiom 自适应能力
+axiom mujoco --env Walker2d-v5 --gravity-scale 1.1 --friction-scale 0.8
+
+# Humanoid 终极 BOSS
+axiom mujoco --env Humanoid-v5 --steps 500 --render
+
+# 域随机化 + 物理感知（提升 Sim-to-Real 鲁棒性）
+axiom mujoco --env all --train 40 --domain-rand --physics-aware
+
+# Walker2d 敏感性分析
+axiom mujoco --analyze-walker2d -o walker2d_sensitivity.json
+```
+
+- **Soft Shell** 充当 Policy 网络
+- **Hard Core** 可读取 MuJoCo XML 物理参数（质量、长度）
+- **Sim-to-Real**：`--gravity-scale` / `--friction-scale` 测试自适应
+- **域随机化**：`--domain-rand` 训练时随机 gravity/friction
+- **物理感知**：`--physics-aware` 将物理参数输入 Hard Core
 
 ---
 

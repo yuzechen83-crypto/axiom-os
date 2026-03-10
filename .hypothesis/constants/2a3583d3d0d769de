@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\semantics\structure_encoder.py
+# hypothesis_version: 6.151.9
+
+[-0.5, 128, 'conservation', 'conservation_feature', 'coupling', 'coupling_feature', 'dominant_mode', 'physical_labels', 'symmetry', 'symmetry_feature', 'vector']

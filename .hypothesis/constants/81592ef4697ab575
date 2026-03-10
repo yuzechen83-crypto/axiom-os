@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\core\physical_scale.py
+# hypothesis_version: 6.151.9
+
+[1e-308, 1e-10, 0.5, 1.0, 1e+308, 100, 'PhysicalScaleSystem', 'T', 'float64', 'geometric', 'ignore', 'm', 'q', 't', 'ℓ']

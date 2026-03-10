@@ -44,6 +44,26 @@ from .alpha_scheduler import (
     compute_alpha_hybrid,
 )
 from .turbulence_scale import TurbulencePhysicalScale, TurbulenceScales
+from .generic_coupling import (
+    GENERICLayer,
+    create_hamiltonian_system,
+)
+from .differentiable_physics import (
+    DifferentiableRigidBodyDynamics,
+    PhysicsConfig,
+    RigidBodyState,
+    HAS_WARP,
+)
+from .hard_core_manager import (
+    HardCoreManager,
+    HardCoreLevel,
+    PhysicsFormula,
+    CrystallizationEngine,
+)
+from .rcln_v3 import (
+    RCLN3,
+    create_rcln3,
+)
 from .turbulence_invariants import (
     grad_u_from_velocity,
     decompose_grad_u,
@@ -81,6 +101,23 @@ from .features_2d import (
 )
 
 __all__ = [
+    # RCLN 3.0 - Triple Evolution
+    "RCLN3",
+    "create_rcln3",
+    # GENERIC Coupling
+    "GENERICLayer",
+    "create_hamiltonian_system",
+    # Differentiable Physics
+    "DifferentiableRigidBodyDynamics",
+    "PhysicsConfig",
+    "RigidBodyState",
+    "HAS_WARP",
+    # Hard Core Evolution
+    "HardCoreManager",
+    "HardCoreLevel",
+    "PhysicsFormula",
+    "CrystallizationEngine",
+    # Legacy
     "wrap_adaptive_hard_core",
     "make_wind_hard_core",
     "make_wind_hard_core_enhanced",

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\engine\gflownet.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-10, 1.0, 100, 128, '*', '+', '-', '/', '0', '?', 'END', 'EquationState', '__builtins__', 'cos', 'exp', 'log', 'np', 'sin', 'sqrt', 'x0', 'x1', 'x2', 'x3', 'x4']

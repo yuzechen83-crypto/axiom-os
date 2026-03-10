@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn_evo\core\hippocampus.py
+# hypothesis_version: 6.151.9
+
+[1e-08, 0.01, 0.05, 0.1, 0.5, 1.0, 500, 512, 2000, 100000, 'DissipationNet', 'EinsteinCore', 'F = -k * x', 'F = m * a', 'HamiltonianNN', 'HookesLaw', 'L^-3', 'L^2T^-1', 'LearnedDamping', 'MLT^-2', 'ML^2T^-2Q^-1', 'NavierStokes_Flux', 'Newton2', 'OhmsLaw', 'PlasmaDensity', 'V = I * R', '_device', '_learned_terms', 'cpu', 'damping', 'electromagnetism', 'fluid', 'flux = -nu * grad(u)', 'mechanics', 'plasma']

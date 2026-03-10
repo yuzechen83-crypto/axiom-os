@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\agent\tools.py
+# hypothesis_version: 6.151.9
+
+[200, 500, 2000, 8000, '--config', '--no-fail-on-alerts', '--report', 'MLL 未加载，默认领域列表', 'agent_output', 'axiom_os', 'battery', 'benchmark_report.md', 'benchmarks', 'code_snippet', 'content', 'context_received', 'custom', 'description', 'domain_name', 'domains', 'epochs', 'error', 'extensions', 'get_benchmark_report', 'hint', 'int, 星系数，默认 20', 'int, 训练轮数，默认 200', 'list_domains', 'message', 'n_galaxies', 'n_samples', 'name', 'ok', 'params', 'path', 'quick', 'r2', 'r2_linear', 'r2_log', 'rar', 'report_path', 'results', 'run_benchmark_quick', 'run_benchmarks', 'run_discovery_demo', 'run_rar', 'saved_path', 'str', 'str, Python 代码', 'summary', 'turbulence', 'utf-8', '公式发现 Demo 已执行', '基准已跑完，见 results/', '扩展已保存，需人工审核后集成', '报告不存在，请先运行基准', '读取最新基准报告全文，用于分析当前性能']

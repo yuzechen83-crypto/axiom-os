@@ -1,0 +1,66 @@
+{
+  "walker2d_sensitivity": [
+    {
+      "label": "Standard",
+      "g": 1.0,
+      "f": 1.0,
+      "reward": -1532.1163932279246,
+      "discovery_enabled": true
+    },
+    {
+      "label": "g+5% f-5%",
+      "g": 1.05,
+      "f": 0.95,
+      "reward": -1749.7412169981017,
+      "discovery_enabled": true
+    },
+    {
+      "label": "g-5% f+5%",
+      "g": 0.95,
+      "f": 1.05,
+      "reward": -1728.9687061575814,
+      "discovery_enabled": true
+    },
+    {
+      "label": "g+10% f-10%",
+      "g": 1.1,
+      "f": 0.9,
+      "reward": -1758.3650801170497,
+      "discovery_enabled": true
+    },
+    {
+      "label": "g-10% f+10%",
+      "g": 0.9,
+      "f": 1.1,
+      "reward": -1720.880968323929,
+      "discovery_enabled": true
+    },
+    {
+      "label": "High Gravity / Low Friction",
+      "g": 1.2,
+      "f": 0.8,
+      "reward": -1776.6010008484404,
+      "discovery_enabled": true
+    },
+    {
+      "label": "Low Gravity / High Friction",
+      "g": 0.8,
+      "f": 1.2,
+      "reward": -1704.9990785352413,
+      "discovery_enabled": true
+    }
+  ],
+  "robustness_metrics": {
+    "baseline_reward": -1532.1163932279246,
+    "min_reward": -1776.6010008484404,
+    "mean_reward": -1710.2389206011812,
+    "reward_drop_worst": 244.48460762051582,
+    "robustness_score": 1.1162591362358836
+  },
+  "metadata": {
+    "env": "Walker2d-v5",
+    "steps_per_condition": 2000,
+    "discovery_enabled": true,
+    "seed": 42
+  }
+}

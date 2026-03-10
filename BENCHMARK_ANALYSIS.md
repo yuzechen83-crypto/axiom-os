@@ -96,6 +96,48 @@ MOND g0 = 144 (km/s)^2/kpc
 
 ---
 
+### 7. MuJoCo 控制测试（Gymnasium + MuJoCo）
+
+AI 控制「高考」：Swimmer / Hopper / Walker2d / Humanoid
+
+#### 改进前后对比（REINFORCE 训练 30 episodes）
+
+| 科目 | 随机 Policy | 训练后 | 提升 |
+|------|-------------|--------|------|
+| **Swimmer-v5** | -5.7 | **25.1** | 转正 |
+| **Hopper-v5** | 136.2 | **176.9** | +30% |
+| **Walker2d-v5** | 35.7 | **421.3** | +1080% |
+| **Humanoid-v5** | 356.2 | **1025.0** | +188% |
+
+**配置**: 300 步评估，30 episodes REINFORCE 训练，Soft Shell MLP Policy
+
+**评价**: 🤖 **显著改进** - 短时 REINFORCE 训练使 Swimmer 从负奖励转正，Walker2d 提升约 11 倍，Humanoid 达到 1000+ 奖励
+
+#### Sim-to-Real 扰动测试（gravity×1.05, friction×0.95）
+
+| 科目 | 标准环境 | 扰动环境 | 说明 |
+|------|----------|----------|------|
+| Swimmer-v5 | 25.1 | 28.4 | 略升 |
+| Hopper-v5 | 176.9 | 258.3 | 提升 |
+| Walker2d-v5 | 421.3 | -184.5 | 下降，需域适应 |
+| Humanoid-v5 | 1025.0 | 646.4 | 下降，Sim-to-Real 挑战 |
+
+**结论**: 重力/摩擦扰动下部分环境表现下降，体现 Sim-to-Real gap。
+
+#### 鲁棒性改进（域随机化 + 物理感知 Policy）
+
+| 科目 | 标准训练 | 域随机化+物理感知 | Sim-to-Real (g×1.05,f×0.95) |
+|------|----------|-------------------|------------------------------|
+| Hopper-v5 | 176.9 | **221.1** | 118.8 |
+| Walker2d-v5 | 421.3 | 216.4 | -175.3 |
+| Humanoid-v5 | 1025.0 | **1086.7** | **714.6** |
+
+- **域随机化**：训练时随机 gravity∈[0.9,1.1]、friction∈[0.8,1.2]
+- **物理感知 Policy**：将 gravity_scale、friction_scale 作为 Hard Core 输入
+- **Walker2d 敏感性分析**：`axiom mujoco --analyze-walker2d` 可输出不同扰动下的 reward
+
+---
+
 ## 📈 性能对比图
 
 ### Discovery vs Baseline
@@ -162,6 +204,7 @@ MOND g0 = 144 (km/s)^2/kpc
 | 海马体 | ✅ | ⭐⭐⭐⭐⭐ |
 | Coach | ✅ | ⭐⭐⭐⭐⭐ |
 | Bundle Field | ✅ | ⭐⭐⭐⭐ |
+| MuJoCo 控制 | ✅ | ⭐⭐⭐⭐ |
 
 ### 🏅 总体评价
 
@@ -176,7 +219,7 @@ MOND g0 = 144 (km/s)^2/kpc
 
 ## 📅 测试信息
 
-- **测试时间**: 2026-03-02
+- **测试时间**: 2026-03-05
 - **环境**: Python 3.13, PyTorch, scikit-learn
 - **硬件**: 标准PC环境
 - **种子**: 42 (可复现)

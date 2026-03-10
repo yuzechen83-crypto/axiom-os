@@ -1,0 +1,36 @@
+{
+  "experiment": "RCLN vs TBNN LES Fair Comparison",
+  "data": {
+    "source": "JHTDB isotropic8192",
+    "shape": [
+      8,
+      8,
+      8,
+      3
+    ]
+  },
+  "models": {
+    "smagorinsky": {
+      "mse": 5.328861334419344e-07,
+      "r2": -0.5367882076623005,
+      "correlation": -0.08474938374405445
+    },
+    "rcln": {
+      "metrics": {
+        "mse": 5.325974257175403e-07,
+        "r2": -0.5359555863859709,
+        "correlation": -0.08474938500193487
+      },
+      "train_time": 1.458326816558838
+    },
+    "tbnn": {
+      "metrics": {
+        "mse": 3.307594056423113e-07,
+        "r2": 0.17576463555750832,
+        "correlation": 0.7086671126988018
+      },
+      "train_time": 1.226431131362915
+    }
+  },
+  "winner": "TBNN"
+}

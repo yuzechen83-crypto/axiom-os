@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\boundary\boundary_flux.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-05, 0.1, 0.5, 1.0, 10.0, 'Dirichlet', 'Neumann', 'Robin', 'boundary', 'flux_violation', 'magnitude', 'range_violation', 'type']

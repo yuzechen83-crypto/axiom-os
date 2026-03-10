@@ -1,0 +1,92 @@
+================================================================================
+AXIOM-OS x NVIDIA ISAAC SIM - 运行指南
+================================================================================
+
+当前状态：Isaac Sim 已安装，需要正确方式运行脚本
+
+================================================================================
+方法 1: 自动启动 (推荐，但较慢)
+================================================================================
+
+1. 确保 Isaac Sim 完全关闭
+2. 双击运行: launch_axiom_demo.bat
+3. 等待 1-2 分钟加载 Isaac Sim
+4. 脚本会自动运行，你会看到：
+   - 灰色地面
+   - Unitree Go1 四足机器人
+   - 控制台的混沌注入和发现日志
+
+================================================================================
+方法 2: 如果 Isaac Sim 已经在运行 (最快)
+================================================================================
+
+1. 在 Isaac Sim 窗口中：
+   - 点击菜单: Window -> Script Editor
+   
+2. 在 Script Editor 中：
+   - 点击 "Open" 按钮
+   - 选择: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_go1_full_demo.py
+   - 点击 "Run" 按钮
+   
+3. 在 "Console" 窗口中查看输出
+   - 如果没有 Console 窗口，点击 Window -> Console
+
+================================================================================
+方法 3: 简化测试 (确认环境正常)
+================================================================================
+
+1. 在 Isaac Sim 的 Script Editor 中
+2. 粘贴以下代码：
+
+from isaacsim.core.api import World
+from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.utils.nucleus import get_assets_root_path
+
+world = World()
+world.scene.add_default_ground_plane()
+
+assets_root = get_assets_root_path()
+go1_path = assets_root + "/Isaac/Robots/Unitree/Go1/go1.usd"
+add_reference_to_stage(usd_path=go1_path, prim_path="/World/Go1")
+
+world.reset()
+
+for i in range(1000):
+    world.step(render=True)
+
+3. 点击 Run
+
+================================================================================
+故障排除
+================================================================================
+
+问题 1: "No module named isaacsim"
+解决: 必须从 Isaac Sim 内部运行，不能直接用 python.exe
+
+问题 2: 机器人没有显示
+解决: 
+- 检查 Stage 面板（左侧）是否有 /World/Go1
+- 按 F 键聚焦相机
+- 检查 Console 是否有错误信息
+
+问题 3: 视图是黑色的
+解决:
+- 等待 30 秒让场景加载
+- 点击 Viewport，使用滚轮缩放
+- 检查 Lighting 设置
+
+问题 4: 运行很慢
+解决:
+- 首次运行需要编译 shader，等待完成
+- 后续运行会更快
+
+================================================================================
+文件说明
+================================================================================
+
+axiom_go1_full_demo.py    - 完整高级演示（推荐）
+isaac_standalone_example.py - 简单示例
+run_isaac_demo.py         - 命令行版本（需要特殊启动方式）
+simulation/isaac_env.py   - 环境包装器类
+
+================================================================================

@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\core\causal_constraints.py
+# hypothesis_version: 6.151.9
+
+[1.0, '__iter__', 'allowed_edges', 'check_light_cone']

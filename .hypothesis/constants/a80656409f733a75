@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\agent\deepseek_agent.py
+# hypothesis_version: 6.151.6
+
+[0.7, 2000, ',', '401', '429', 'API 响应为空或格式不正确', 'API 调用', 'Unauthorized', 'arguments', 'assistant', 'bool', 'boolean', 'choices', 'connection', 'content', 'deepseek-chat', 'description', 'float', 'function', 'id', 'int', 'integer', 'max_tokens', 'messages', 'model', 'name', 'number', 'object', 'parameters', 'params', 'properties', 'rate', 'required', 'role', 'str', 'string', 'system', 'temperature', 'timeout', 'tool', 'tool_call_id', 'tool_calls', 'tools', 'type', 'user', '客户端初始化', '已达到最大工具调用轮数限制，对话结束。', '未得到有效回复']

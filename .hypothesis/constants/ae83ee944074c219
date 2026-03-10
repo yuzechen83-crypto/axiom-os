@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\axiom_os\mll\domain_protocols.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.001, 0.02, 0.15, 0.6, 0.8, 1.0, 1.5, 5.0, 100, 200, 300, 500, '...', 'No model from train', 'Protocol', '_', '_last_train_res', '_last_y_soft', '_pinn_X_seq', '_pinn_Y', '_pinn_meta', '_pinn_split', 'acrobot', 'battery', 'bic', 'error', 'eval', 'fluids', 'formula', 'generic', 'loss', 'loss_history', 'mae', 'mae_u', 'mae_v', 'mechanics', 'minimal', 'model', 'n', 'nan', 'ok', 'r2', 'rar', 'scalers', 'simulated', 't', 'turbulence', 'turbulence_pinn_lstm', 'x', 'y', 'z']

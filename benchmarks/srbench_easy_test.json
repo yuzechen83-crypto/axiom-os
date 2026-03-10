@@ -1,0 +1,78 @@
+{
+  "total_formulas": 6,
+  "success_count": 5,
+  "success_rate": 0.8333333333333334,
+  "exact_match_count": 0,
+  "exact_match_rate": 0.0,
+  "mean_r2": 0.9475917535731607,
+  "mean_similarity": 0.13888888888888887,
+  "total_time": 1.7030489444732666,
+  "results": [
+    {
+      "formula_name": "I.6.2a",
+      "ground_truth": "E = m * c^2",
+      "discovered": "0.1995*x0 + 0.1804*x1 + 0.1263*x0^2 + 0.3466*x0*x1 + 0.3298*x1^2 + 0.3018",
+      "exact_match": false,
+      "r2_score": 0.9961927277320827,
+      "mse": 156.3950547197326,
+      "structural_similarity": 0.25,
+      "success": true,
+      "training_time": 0.7580490112304688
+    },
+    {
+      "formula_name": "I.8.14",
+      "ground_truth": "d = v * t",
+      "discovered": "0.1384*x0 + 0.1411*x1 + 0.2518*x0^2 + 0.3415*x0*x1 + 0.2422*x1^2 + 0.3079",
+      "exact_match": false,
+      "r2_score": 0.9988607270040842,
+      "mse": 0.5731829236242936,
+      "structural_similarity": 0.0,
+      "success": true,
+      "training_time": 0.17700767517089844
+    },
+    {
+      "formula_name": "I.12.1",
+      "ground_truth": "F = mu * N",
+      "discovered": "-0.0017*x0 + 0.8237",
+      "exact_match": false,
+      "r2_score": 0.9992634011224759,
+      "mse": 0.3705923862596443,
+      "structural_similarity": 0.0,
+      "success": true,
+      "training_time": 0.17797350883483887
+    },
+    {
+      "formula_name": "I.12.11",
+      "ground_truth": "E = 0.5 * m * v^2",
+      "discovered": "0.1995*x0 + 0.1804*x1 + 0.1263*x0^2 + 0.3466*x0*x1 + 0.3298*x1^2 + 0.3018",
+      "exact_match": false,
+      "r2_score": 0.9979308874452077,
+      "mse": 21.248741123329463,
+      "structural_similarity": 0.25,
+      "success": true,
+      "training_time": 0.18403840065002441
+    },
+    {
+      "formula_name": "I.14.3",
+      "ground_truth": "U = m * g * h",
+      "discovered": "0.1418*x0 + 0.1645*x1 + 0.1583*x2 + 0.1638*x0^2 + 0.2710*x0*x1 + 0.2518*x0*x2 + 0.1481*x1^2 + 0.2674*x1*x2 + 0.1312*x2^2 + 0.3123",
+      "exact_match": false,
+      "r2_score": 0.9919898360092515,
+      "mse": 166.46993428179957,
+      "structural_similarity": 0.0,
+      "success": true,
+      "training_time": 0.18482589721679688
+    },
+    {
+      "formula_name": "I.15.3t",
+      "ground_truth": "t = (v - u) / a",
+      "discovered": "-0.0038*x0 + 0.3574",
+      "exact_match": false,
+      "r2_score": 0.7013129421258613,
+      "mse": 6.144637139754635,
+      "structural_similarity": 0.3333333333333333,
+      "success": false,
+      "training_time": 0.22115445137023926
+    }
+  ]
+}

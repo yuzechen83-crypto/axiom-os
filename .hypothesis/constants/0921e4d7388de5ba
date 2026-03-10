@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn\semantics\physical_labels.py
+# hypothesis_version: 6.151.9
+
+[0.1, 'charge', 'data', 'electric_field', 'electrolyte', 'embedding', 'enthalpy', 'entropy', 'flux', 'gas_ionized', 'gravity', 'ion_density', 'labels', 'magnetic_field', 'momentum', 'physical_labels', 'plasma', 'pressure', 'stress', 'temperature', 'unknown', 'velocity']

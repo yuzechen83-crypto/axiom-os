@@ -1,0 +1,67 @@
+{
+  "total_formulas": 5,
+  "success_count": 0,
+  "success_rate": 0.0,
+  "exact_match_count": 0,
+  "exact_match_rate": 0.0,
+  "mean_r2": 0.9927415423454381,
+  "mean_similarity": 0.1,
+  "total_time": 1.8451085090637207,
+  "results": [
+    {
+      "formula_name": "I.6.2a",
+      "ground_truth": "E = m * c^2",
+      "discovered": "0.1974*x0 + 0.1795*x1 + 0.1133*x0^2 + 0.3549*x0*x1 + 0.3090*x1^2 + 0.3323",
+      "exact_match": false,
+      "r2_score": 0.9882831902609491,
+      "mse": 461.14274312516363,
+      "structural_similarity": 0.25,
+      "success": false,
+      "training_time": 1.5157103538513184
+    },
+    {
+      "formula_name": "I.8.14",
+      "ground_truth": "d = v * t",
+      "discovered": "0.1393*x0 + 0.1376*x1 + 0.2541*x0^2 + 0.3355*x0*x1 + 0.2200*x1^2 + 0.3256",
+      "exact_match": false,
+      "r2_score": 0.9968716859865429,
+      "mse": 1.5795018565231471,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.08373475074768066
+    },
+    {
+      "formula_name": "I.12.1",
+      "ground_truth": "F = mu * N",
+      "discovered": "-0.0257*x0 + 0.0001*x0^2 + 0.8863",
+      "exact_match": false,
+      "r2_score": 0.9961856970891184,
+      "mse": 1.9258611837438955,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.08307385444641113
+    },
+    {
+      "formula_name": "I.12.11",
+      "ground_truth": "E = 0.5 * m * v^2",
+      "discovered": "0.1974*x0 + 0.1795*x1 + 0.1133*x0^2 + 0.3549*x0*x1 + 0.3090*x1^2 + 0.3323",
+      "exact_match": false,
+      "r2_score": 0.9942507011051887,
+      "mse": 56.5693120065664,
+      "structural_similarity": 0.25,
+      "success": false,
+      "training_time": 0.0826408863067627
+    },
+    {
+      "formula_name": "I.14.3",
+      "ground_truth": "U = m * g * h",
+      "discovered": "0.1455*x0 + 0.1626*x1 + 0.1502*x2 + 0.1504*x0^2 + 0.2585*x0*x1 + 0.2365*x0*x2 + 0.1482*x1^2 + 0.2659*x1*x2 + 0.1173*x2^2 + 0.3532",
+      "exact_match": false,
+      "r2_score": 0.9881164372853913,
+      "mse": 247.54989925800106,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.07994866371154785
+    }
+  ]
+}

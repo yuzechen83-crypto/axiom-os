@@ -1,0 +1,4 @@
+# file: C:\Users\ASUS\PycharmProjects\PythonProject1\spnn_evo\core\imagination.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1e-12, 1e-06, 0.01, 0.1, 0.5, 1.0, 2.0, 10000, 'numpy', 'rigid', 'torch.device']

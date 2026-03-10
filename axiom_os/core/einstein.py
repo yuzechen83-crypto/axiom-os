@@ -10,9 +10,14 @@ Metriplectic (GENERIC) formulation:
   - Degeneracy: M∇E = 0 (dissipative part preserves energy)
 
 Hamiltonian case: H only, L = J (symplectic), S = const.
+
+Axiom-OS v4.0: Added Differentiable Physics Engine (Warp/PyTorch)
+- End-to-end differentiable rigid body dynamics
+- GPU-accelerated simulation
+- Gradient-based system identification
 """
 
-from typing import Callable, Tuple, Optional, Union
+from typing import Callable, Tuple, Optional, Union, Dict, List
 import numpy as np
 
 try:
@@ -20,6 +25,19 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
+
+# Axiom-OS v4.0: Differentiable Physics Engine
+try:
+    from .differentiable_physics import (
+        DifferentiableRigidBodyDynamics,
+        RigidBodyState,
+        PhysicsConfig,
+        HAS_WARP,
+    )
+    HAS_DIFF_PHYSICS = True
+except ImportError:
+    HAS_DIFF_PHYSICS = False
+    HAS_WARP = False
 
 
 def _grad_scalar_numpy(
@@ -240,12 +258,145 @@ class SymplecticIntegrator:
         return q_new, p_new
 
 
+class DifferentiableEinsteinCore:
+    """
+    Axiom-OS v4.0: Differentiable Physics-Enhanced Einstein Core.
+    
+    Combines Metriplectic integrators with end-to-end differentiable
+    rigid body dynamics using NVIDIA Warp.
+    
+    Key features:
+    - Full gradient flow through physics simulation
+    - GPU-accelerated dynamics
+    - System identification via gradient descent
+    - Compatible with PyTorch autograd
+    """
+    
+    def __init__(
+        self,
+        state_dim: int = 2,
+        use_differentiable_physics: bool = True,
+        device: str = "cuda" if HAS_TORCH and torch.cuda.is_available() else "cpu",
+        dt: float = 0.01,
+    ):
+        self.state_dim = state_dim
+        self.device = device
+        self.dt = dt
+        self.use_differentiable_physics = use_differentiable_physics and HAS_DIFF_PHYSICS
+        
+        if self.use_differentiable_physics:
+            self.dynamics = DifferentiableRigidBodyDynamics(
+                PhysicsConfig(device=device, dt=dt)
+            )
+            print(f"[DifferentiableEinsteinCore] Using differentiable physics on {device}")
+        else:
+            print(f"[DifferentiableEinsteinCore] Using classical integrators")
+    
+    def step_rigid_body(
+        self,
+        position: torch.Tensor,
+        rotation: torch.Tensor,
+        velocity: torch.Tensor,
+        angular_velocity: torch.Tensor,
+        mass: torch.Tensor,
+        inertia: torch.Tensor,
+        forces: torch.Tensor,
+        torques: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        """
+        Single rigid body dynamics step (fully differentiable).
+        
+        Args:
+            position: [N, 3] positions
+            rotation: [N, 4] quaternions (w, x, y, z)
+            velocity: [N, 3] linear velocities
+            angular_velocity: [N, 3] angular velocities
+            mass: [N] masses
+            inertia: [N, 3, 3] inertia tensors
+            forces: [N, 3] external forces
+            torques: [N, 3] external torques
+        
+        Returns:
+            Dict with updated position, rotation, velocity, angular_velocity
+        """
+        if not self.use_differentiable_physics:
+            raise RuntimeError("Differentiable physics not available")
+        
+        state = RigidBodyState(
+            position=position,
+            rotation=rotation,
+            velocity=velocity,
+            angular_velocity=angular_velocity,
+            mass=mass,
+            inertia=inertia,
+        )
+        
+        new_state = self.dynamics(state, forces, torques)
+        
+        return {
+            'position': new_state.position,
+            'rotation': new_state.rotation,
+            'velocity': new_state.velocity,
+            'angular_velocity': new_state.angular_velocity,
+        }
+    
+    def simulate_trajectory(
+        self,
+        initial_state: Dict[str, torch.Tensor],
+        forces: torch.Tensor,
+        torques: torch.Tensor,
+        num_steps: int,
+    ) -> List[Dict[str, torch.Tensor]]:
+        """
+        Simulate trajectory with full differentiability.
+        
+        Args:
+            initial_state: Initial rigid body state
+            forces: [T, N, 3] force sequence
+            torques: [T, N, 3] torque sequence
+            num_steps: Number of simulation steps
+        
+        Returns:
+            trajectory: List of states
+        """
+        if not self.use_differentiable_physics:
+            raise RuntimeError("Differentiable physics not available")
+        
+        state = RigidBodyState(
+            position=initial_state['position'],
+            rotation=initial_state['rotation'],
+            velocity=initial_state['velocity'],
+            angular_velocity=initial_state['angular_velocity'],
+            mass=initial_state['mass'],
+            inertia=initial_state['inertia'],
+        )
+        
+        trajectory = [{
+            'position': state.position,
+            'rotation': state.rotation,
+            'velocity': state.velocity,
+            'angular_velocity': state.angular_velocity,
+        }]
+        
+        for t in range(min(num_steps, forces.shape[0])):
+            state = self.dynamics(state, forces[t], torques[t])
+            trajectory.append({
+                'position': state.position,
+                'rotation': state.rotation,
+                'velocity': state.velocity,
+                'angular_velocity': state.angular_velocity,
+            })
+        
+        return trajectory
+
+
 class EinsteinCore:
     """
     Symplectic & Metriplectic Reasoner.
     - step_leapfrog: Hamiltonian H only (backward compat)
     - step_metriplectic: Full E, S, L, M with degeneracy
     - decompose_dynamics: Placeholder
+    - v4.0: Added DifferentiableEinsteinCore integration
     """
 
     def __init__(self, state_dim: int = 2, eps: float = 1e-7):

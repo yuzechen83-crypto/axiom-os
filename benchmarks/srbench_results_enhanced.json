@@ -1,0 +1,67 @@
+{
+  "total_formulas": 5,
+  "success_count": 0,
+  "success_rate": 0.0,
+  "exact_match_count": 0,
+  "exact_match_rate": 0.0,
+  "mean_r2": 0.993979528127466,
+  "mean_similarity": 0.08,
+  "total_time": 2.314295530319214,
+  "results": [
+    {
+      "formula_name": "I.6.2a",
+      "ground_truth": "E = m * c^2",
+      "discovered": "0.0381*x0 + -0.0909*x1 + 0.1489*x0^2 + 0.3516*x0*x1 + 0.3114*x1^2 + -0.0732*x0^3 + 0.1383*x0^2*x1 + 0.2683*x0*x1^2 + 0.0704*x1^3 + 0.3112",
+      "exact_match": false,
+      "r2_score": 0.9948926258422847,
+      "mse": 201.01278263533678,
+      "structural_similarity": 0.2,
+      "success": false,
+      "training_time": 1.9026854038238525
+    },
+    {
+      "formula_name": "I.8.14",
+      "ground_truth": "d = v * t",
+      "discovered": "0.1035*x0 + 0.0876*x1 + 0.2840*x0^2 + 0.3330*x0*x1 + 0.2127*x1^2 + -0.0800*x0^3 + 0.1866*x0^2*x1 + 0.1471*x0*x1^2 + -0.0743*x1^3 + 0.3111",
+      "exact_match": false,
+      "r2_score": 0.996425482444424,
+      "mse": 1.8047923229316598,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.10073065757751465
+    },
+    {
+      "formula_name": "I.12.1",
+      "ground_truth": "F = mu * N",
+      "discovered": "-0.0597*x0 + 0.0012*x0^2 + -0.0000*x0^3 + 0.9416",
+      "exact_match": false,
+      "r2_score": 0.9974384374947357,
+      "mse": 1.2933461012099101,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.09926438331604004
+    },
+    {
+      "formula_name": "I.12.11",
+      "ground_truth": "E = 0.5 * m * v^2",
+      "discovered": "0.0381*x0 + -0.0909*x1 + 0.1489*x0^2 + 0.3516*x0*x1 + 0.3114*x1^2 + -0.0732*x0^3 + 0.1383*x0^2*x1 + 0.2683*x0*x1^2 + 0.0704*x1^3 + 0.3112",
+      "exact_match": false,
+      "r2_score": 0.9970320555664467,
+      "mse": 29.202617180218663,
+      "structural_similarity": 0.2,
+      "success": false,
+      "training_time": 0.10924291610717773
+    },
+    {
+      "formula_name": "I.14.3",
+      "ground_truth": "U = m * g * h",
+      "discovered": "0.1016*x0 + 0.1072*x1 + 0.0967*x2 + 0.1538*x0^2 + 0.2640*x0*x1 + 0.2609*x0*x2 + 0.1446*x1^2 + 0.2656*x1*x2 + 0.1268*x2^2 + -0.0401*x0^3 + 0.0930*x0^2*x1 + 0.0580*x0^2*x2 + 0.0611*x0*x1^2 + 0.2420*x0*x1*x2 + 0.0709*x0*x2^2 + -0.0615*x1^3 + 0.0808*x1^2*x2 + 0.0762*x1*x2^2 + -0.0424*x2^3 + 0.3512",
+      "exact_match": false,
+      "r2_score": 0.9841090392894392,
+      "mse": 331.029154933164,
+      "structural_similarity": 0.0,
+      "success": false,
+      "training_time": 0.1023721694946289
+    }
+  ]
+}
